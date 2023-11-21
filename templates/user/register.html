@@ -1,0 +1,136 @@
+<!-- company registration -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>User Registration</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <!-- Favicons -->
+  <link href="{{ url_for('static', filename='img/favicon.png') }}" rel="icon">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='vendor/boxicons/css/boxicons.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='vendor/glightbox/css/glightbox.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='vendor/swiper/swiper-bundle.min.css') }}" rel="stylesheet">
+
+  <!-- Template Main CSS File -->
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- ======= Auth Section ======= -->
+  <section id="auth" class="d-flex flex-column justify-content-center align-items-center" style="height: 110vh">
+    <div class="container text-center text-md-left" data-aos="fade-up">
+      <form action="{{ url_for('userRegister') }}" method="POST" onsubmit="return validateForm()" enctype="multipart/form-data">
+        <h3>User Registration</h3>
+        <h6>Enter details to create your account</h6>
+
+        <label for="userName">Your Name</label>
+        <input type="text" placeholder="e.g. John Doe" id="userName" name="userName" required>
+
+        <label for="email">Email</label>
+        <input type="text" placeholder="e.g. yourname@xxx.com" id="email" name="email" required>
+
+        <label for="password">Password</label>
+        <input type="password" name="password" id="password" />
+        <i class="bi bi-eye-slash" id="togglePassword2"></i>
+
+        <label for="confirmPassword">Confirm Password</label>
+        <input type="password" placeholder="" id="confirmPassword" name="confirmPassword" required>
+        <i class="bi bi-eye-slash" id="togglePassword3"></i>
+        
+
+        <button type="submit">Sign up</button>
+        <span>Already have an account? <a href="{{ url_for('userLogin') }}">Login</a></span>
+    </form>
+    </div>
+  </section><!-- End Auth -->
+
+</main><!-- End #main -->
+
+  <!-- ======= Footer ======= -->
+  <footer id="footer">
+    <div class="container d-md-flex py-4">
+        <div class="copyright">
+          &copy; 2023 - Internship Management System
+        </div>
+    </div>
+  </footer><!-- End Footer -->
+
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Vendor JS Files -->
+  <script src="{{ url_for('static', filename='vendor/purecounter/purecounter_vanilla.js') }}"></script>
+  <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='vendor/glightbox/js/glightbox.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='vendor/isotope-layout/isotope.pkgd.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='vendor/swiper/swiper-bundle.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='vendor/waypoints/noframework.waypoints.js') }}"></script>
+  <script src="{{ url_for('static', filename='vendor/php-email-form/validate.js') }}"></script>
+
+  <!-- Template Main JS File -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+  <script>
+    function validateForm() {
+        var password = document.getElementById("password").value;
+        var confirmPassword = document.getElementById("confirmPassword").value;
+
+        if (password !== confirmPassword) {
+            alert("Passwords do not match. Please re-enter.");
+            return false; // Prevent form submission
+        }
+
+        return true; // Allow form submission if passwords match
+    }
+</script>
+<!-- <script>
+    const togglePassword2 = document.querySelector("#togglePassword2");
+    const password2 = document.querySelector("#password");
+
+    togglePassword2.addEventListener("click", function () {
+        // toggle the type attribute
+        const type = password2.getAttribute("type") === "password" ? "text" : "password";
+        password2.setAttribute("type", type);
+        
+        // toggle the icon
+        this.classList.toggle("bi-eye");
+    });
+
+    // prevent form submit
+    const form = document.querySelector("form");
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+    });
+</script>
+<script>
+    const togglePassword3 = document.querySelector("#togglePassword3");
+    const password3 = document.querySelector("#confirmPassword");
+
+    togglePassword3.addEventListener("click", function () {
+        // toggle the type attribute
+        const type = password3.getAttribute("type") === "password" ? "text" : "password";
+        password3.setAttribute("type", type);
+        
+        // toggle the icon
+        this.classList.toggle("bi-eye");
+    });
+</script> -->
+
+</body>
+
+</html>

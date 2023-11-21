@@ -1,0 +1,208 @@
+<!-- Homepage -->
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+        <title>OCR</title>
+        <meta content name="description">
+        <meta content name="keywords">
+
+        <!-- Favicons -->
+        <link href="{{ url_for('static', filename='img/favicon.png') }}"
+            rel="icon">
+
+        <!-- Google Fonts -->
+        <link
+            href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
+            rel="stylesheet">
+
+        <!-- Vendor CSS Files -->
+        <link
+            href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}"
+            rel="stylesheet">
+        <link
+            href="{{ url_for('static', filename='vendor/bootstrap-icons/bootstrap-icons.css') }}"
+            rel="stylesheet">
+        <link
+            href="{{ url_for('static', filename='vendor/boxicons/css/boxicons.min.css') }}"
+            rel="stylesheet">
+        <link
+            href="{{ url_for('static', filename='vendor/glightbox/css/glightbox.min.css') }}"
+            rel="stylesheet">
+        <link
+            href="{{ url_for('static', filename='vendor/swiper/swiper-bundle.min.css') }}"
+            rel="stylesheet">
+
+        <!-- Template Main CSS File -->
+        <link href="{{ url_for('static', filename='css/document.css') }}"
+            rel="stylesheet">
+    </head>
+
+    <body>
+
+        <!-- ======= Header ======= -->
+        <header id="header">
+            <div class="d-flex flex-column">
+
+                <nav id="navbar" class="nav-menu navbar">
+                    <ul>
+                        <li><a href="{{ url_for('documentHome') }}"
+                                class="nav-link scrollto"><i
+                                    class="bx bx-home"></i>
+                                <span>Home</span></a></li>
+                        <li><a href="{{ url_for('documentTemplates') }}"
+                                class="nav-link scrollto"><i
+                                    class="bx bx-book-content"></i>
+                                <span>Templates</span></a></li>
+                        <li><a href="{{ url_for('documentSettings') }}"
+                                class="nav-link scrollto"><i class="bx bx-cog"></i>
+                                <span>Settings</span></a></li>
+                        <li><a href="{{ url_for('documentProfile') }}"
+                                class="nav-link scrollto active"><i
+                                    class="bx bx-user"></i>
+                                <span>Profile</span></a></li>
+                        <li><a href="{{ url_for('documentTrash') }}"
+                                class="nav-link scrollto"><i class="bx bx-trash"></i>
+                                <span>Trash</span></a></li>
+                    </ul>
+                </nav><!-- .nav-menu -->
+
+                <div class="nav-container container">
+                    <div class="help-div">
+                        <a><i class='help-button bx bx-question-mark'></i></a>
+                    </div>
+                    <h6 class="help mt-3 text-white">Need help?</h6>
+                    <p class="text-white">Please check our docs</p>
+                    <button id="documentation">Documentation</button>
+                </div>
+            </div>
+        </header><!-- End Header -->
+
+        <!-- ======= Hero Section ======= -->
+        <!-- <section id="hero" class="d-flex flex-column justify-content-center align-items-center">
+    <div class="container text-center text-md-left" data-aos="fade-up">
+      
+    </div>
+  </section>End Hero -->
+
+        <main id="main">
+
+            <section id="portfolio" class="portfolio section-bg">
+                <div class="container">
+                    <div class="section-title">
+                        <h2>Account Settings</h2>
+                        <h5>Profile</h5>
+                    </div>
+                    <div>
+                        <div class="col-sm-3">
+                            <p class="text-muted mb-0">Name</p>
+                        </div>
+                        <div class="col-sm-9">
+                            <p class="mb-0">{{ user_data.name }}</p>
+                        </div>
+
+                        <div class="col-sm-3 mt-3">
+                            <p class="text-muted mb-0">Email</p>
+                        </div>
+                        <div class="col-sm-9">
+                            <p class="mb-0">{{ user_data.email }}</p>
+                        </div>
+
+                        <div class="col-sm-3 mt-3">
+                            <p class="text-muted mb-0">Password</p>
+                        </div>
+                        <div class="col-sm-9">
+                            <p class="mb-0">{{ user_data.password }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="d-flex justify-content-start mb-2 mt-3">
+                            <button type="button"
+                                class="btn btn-outline-primary"
+                                style="float: right;"
+                                data-bs-toggle="modal"
+                                data-bs-target="#editInfoModal">Edit Info</button>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </main>
+
+        <!-- ======= Footer ======= -->
+        <footer id="footer">
+            <div class="container d-md-flex py-4">
+                <div class="copyright">
+                    &copy; 2023 - OCR System
+                </div>
+            </div>
+        </footer><!-- End Footer -->
+
+        <a href="#"
+            class="back-to-top d-flex align-items-center justify-content-center"><i
+                class="bi bi-arrow-up-short"></i></a>
+
+        <!-- Vendor JS Files -->
+        <script
+            src="{{ url_for('static', filename='vendor/purecounter/purecounter_vanilla.js') }}"></script>
+        <script
+            src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+        <script
+            src="{{ url_for('static', filename='vendor/glightbox/js/glightbox.min.js') }}"></script>
+        <script
+            src="{{ url_for('static', filename='vendor/isotope-layout/isotope.pkgd.min.js') }}"></script>
+        <script
+            src="{{ url_for('static', filename='vendor/swiper/swiper-bundle.min.js') }}"></script>
+        <script
+            src="{{ url_for('static', filename='vendor/waypoints/noframework.waypoints.js') }}"></script>
+        <script
+            src="{{ url_for('static', filename='vendor/php-email-form/validate.js') }}"></script>
+
+        <!-- Template Main JS File -->
+        <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+    </body>
+<!-- Edit User Info Modal -->
+<div class="modal fade" id="editInfoModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ url_for('documentProfile') }}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Are you sure to this changes？')">
+                <input type="hidden" name="action" value="editUser">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit Info</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" class="form-control" placeholder="" id="name" name="name"
+                                pattern="" value="{{ user_data.name }}" required>
+                        </div>
+                        <br />
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="text" class="form-control" placeholder="e.g. 4.0000" id="email" name="email"
+                                pattern="" value="{{ user_data.email }}" required>
+                        </div>
+                        <br />
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="text" class="form-control" placeholder="e.g. 4.0000" id="password" name="password"
+                                pattern="" value="{{ user_data.password }}" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+</html>
