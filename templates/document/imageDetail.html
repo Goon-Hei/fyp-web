@@ -1,0 +1,137 @@
+<!-- Homepage -->
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+        <title>OCR</title>
+        <meta content name="description">
+        <meta content name="keywords">
+
+        <!-- Favicons -->
+        <link href="{{ url_for('static', filename='img/favicon.png') }}"
+            rel="icon">
+
+        <!-- Google Fonts -->
+        <link
+            href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
+            rel="stylesheet">
+
+        <!-- Vendor CSS Files -->
+        <link
+            href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}"
+            rel="stylesheet">
+        <link
+            href="{{ url_for('static', filename='vendor/bootstrap-icons/bootstrap-icons.css') }}"
+            rel="stylesheet">
+        <link
+            href="{{ url_for('static', filename='vendor/boxicons/css/boxicons.min.css') }}"
+            rel="stylesheet">
+        <link
+            href="{{ url_for('static', filename='vendor/glightbox/css/glightbox.min.css') }}"
+            rel="stylesheet">
+        <link
+            href="{{ url_for('static', filename='vendor/swiper/swiper-bundle.min.css') }}"
+            rel="stylesheet">
+
+        <!-- Template Main CSS File -->
+        <link href="{{ url_for('static', filename='css/detail.css') }}"
+            rel="stylesheet">
+    </head>
+
+    <body class="row">
+
+        <!-- ======= Header ======= -->
+        <header id="header">
+            <div class="d-flex flex-column">
+
+                <nav id="navbar" class="nav-menu navbar">
+                    <ul>
+                        <li><a href="{{ url_for('documentHome') }}"
+                                class="nav-link scrollto active"><i
+                                    class="bx bx-home"></i>
+                                <span>Home</span></a></li>
+                        <li><a href="{{ url_for('documentTemplates') }}"
+                                class="nav-link scrollto"><i
+                                    class="bx bx-book-content"></i>
+                                <span>Templates</span></a></li>
+                        <li><a href="{{ url_for('documentProfile') }}"
+                                class="nav-link scrollto"><i
+                                    class="bx bx-user"></i>
+                                <span>Profile</span></a></li>
+                        <li><a href="{{ url_for('documentTrash') }}"
+                                class="nav-link scrollto"><i class="bx bx-trash"></i>
+                                <span>Trash</span></a></li>
+                    </ul>
+                </nav><!-- .nav-menu -->
+
+                <div class="nav-container container">
+                    <div class="help-div">
+                        <a><i class='help-button bx bx-question-mark'></i></a>
+                    </div>
+                    <h6 class="help mt-3 text-white">Need help?</h6>
+                    <p class="text-white">Please check our docs</p>
+                    <button id="documentation">Documentation</button>
+                </div>
+
+                <form action="{{ url_for('documentHome') }}" method="POST">
+                    <input type="hidden" name="action" value="logout">
+                    <button id="logout" type="submit" class="logout-button">Sign
+                        Out</button>
+                </form>
+
+            </div>
+        </header><!-- End Header -->
+
+        <!-- ======= Header ======= -->
+
+        <!-- ======= Hero Section ======= -->
+        <!-- <section id="hero" class="d-flex flex-column justify-content-center align-items-center">
+    <div class="container text-center text-md-left" data-aos="fade-up">
+      
+    </div>
+  </section>End Hero -->
+        <!-- Replace 'your-image-url.jpg' with the actual URL of your image -->
+        <div class="big-container">
+            <div id="image-container">
+                <img src="{{ image_link }}" alt="Image">
+            </div>
+            <div id="button-container">
+                <!-- This div will hold the API response and will be displayed above the button -->
+                <form method="POST"
+                    action="{{ url_for('documentImageDetail') }}">
+                    <input type="hidden" name="imageUrl"
+                        value="{{ image_link }}">
+                    <button type="submit" id="post-button">OCR</button>
+                </form>
+                {% if api_response %}
+                <div id="api-response">{{ api_response|safe }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <a href="#"
+            class="back-to-top d-flex align-items-center justify-content-center"><i
+                class="bi bi-arrow-up-short"></i></a>
+
+        <!-- Vendor JS Files -->
+        <script
+            src="{{ url_for('static', filename='vendor/purecounter/purecounter_vanilla.js') }}"></script>
+        <script
+            src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+        <script
+            src="{{ url_for('static', filename='vendor/glightbox/js/glightbox.min.js') }}"></script>
+        <script
+            src="{{ url_for('static', filename='vendor/isotope-layout/isotope.pkgd.min.js') }}"></script>
+        <script
+            src="{{ url_for('static', filename='vendor/swiper/swiper-bundle.min.js') }}"></script>
+        <script
+            src="{{ url_for('static', filename='vendor/waypoints/noframework.waypoints.js') }}"></script>
+        <script
+            src="{{ url_for('static', filename='vendor/php-email-form/validate.js') }}"></script>
+
+    </body>
+
+</html>

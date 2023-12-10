@@ -1,44 +1,40 @@
 from flask import Flask, flash, render_template, jsonify, request, redirect, url_for, session
 import firebase_admin
 import pyrebase
-from firebase_admin import credentials, db, storage
+from firebase_admin import credentials, db, storage, auth, firestore
 import secrets
 from datetime import datetime, timedelta
 from flask_bcrypt import Bcrypt
+from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
+import hashlib
+import requests
+import json
+import re
+from datetime import datetime
 
+ALLOWED_EXTENSIONS = {'pdf', 'jpeg', 'jpg', 'png'}
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
 
-# config = {
-#   'apiKey': "AIzaSyB5Dy853MrTopAYvSqIdNiB2PRxJN7KqpE",
-#   'authDomain': "ocr-fyp-beea5.firebaseapp.com",
-#   'databaseURL': "https://ocr-fyp-beea5-default-rtdb.asia-southeast1.firebasedatabase.app",
-#   'projectId': "ocr-fyp-beea5",
-#   'storageBucket': "ocr-fyp-beea5.appspot.com",
-#   'messagingSenderId': "906762493319",
-#   'appId': "1:906762493319:web:a3418f94dde2f4e3d60722",
-#   'measurementId': "G-MKT2TS8EPQ",
-#   'databaseURL' : ''
-# }
-
-# firebase = pyrebase.initialize_app(config)
-# auth = firebase.auth()
 
 cred = credentials.Certificate("ocr-fyp-beea5-firebase-adminsdk-lik81-e109b66cf1.json")
-# Initialize the app with a service account, granting admin privileges
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://ocr-fyp-beea5-default-rtdb.asia-southeast1.firebasedatabase.app',
     'storageBucket': 'ocr-fyp-beea5.appspot.com'
 })
 
-# The app only has access to public data as defined in the Security Rules
-ref = db.reference("")
-ref.get()
-
 storage_client = storage.bucket(app=firebase_admin.get_app(), name='ocr-fyp-beea5.appspot.com')
 
+# Create a reference to the default Firebase Storage bucket
+storage_client = firebase_admin.storage.bucket()
+storage_ref = storage.bucket()
+
 bcrypt = Bcrypt()
+
+# Application Default credentials are automatically created.
+db = firestore.client()
 
 # Main
 @app.route("/")
@@ -47,58 +43,99 @@ def index():
         session.clear()
     return render_template('index.html')
 
+def hashPassword(password):
+    # Create a new SHA-512 hash object
+    sha512 = hashlib.sha512()
+
+    # Update the hash object with the UTF-8 encoded password
+    sha512.update(password.encode('utf-8'))
+
+    # Get the hexadecimal representation of the digest
+    hashed_password = sha512.hexdigest()
+
+    return hashed_password
+
+def verify_password(stored_hashed_password, entered_password):
+    return stored_hashed_password == hashPassword(entered_password)
+
 @app.route("/user/login", methods=['GET', 'POST'])
 def userLogin():
-    error_message = None  # Define error_message with a default value
+    error_message = None
 
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
 
-        # Create a reference to the root of your Firebase Realtime Database
-        ref = db.reference()
-        users_ref = ref.child('users')
+        # Create a reference to the "users" collection in Firestore
+        users_ref = db.collection('users')
 
         # Query to find a user with the matching email
-        user_query = users_ref.order_by_child('email').equal_to(email).get()
+        user_query = users_ref.where('email', '==', email).stream()
 
-        if user_query:
-            for user_id, user_data in user_query.items():
-                stored_hashed_password = user_data.get('password')
+        for user_doc in user_query:
+            user_data = user_doc.to_dict()
+            stored_hashed_password = user_data.get('password')
 
-                # Check if the entered password matches the stored hashed password
-                if bcrypt.check_password_hash(stored_hashed_password, password):
-                    # Authentication successful; store user's data in the session
-                    session['userEmail'] = email
-                    session['userID'] = user_id
-                    print(session['userID'])
+            # Check if the entered password matches the stored hashed password
+            if verify_password(stored_hashed_password, password):
+                # Authentication successful; store user's data in the session
+                session['userEmail'] = email
+                session['userID'] = user_doc.id
 
-                    return redirect(url_for('documentHome'))
+                return redirect(url_for('documentHome'))
 
         error_message = 'Login failed. Please check your email and password.'
 
     return render_template('user/login.html', error_message=error_message)
 
+
 @app.route("/user/register", methods=['GET', 'POST'])
 def userRegister():
-
     if request.method == 'POST':
         name = request.form['userName']
         email = request.form['email']
         password = request.form['password']
-        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
-        user_data = {"name": name, "email": email, "password": hashed_password, "images": ""}
+        # Use the custom SHA-512 hashing method
+        hashed_password = hashPassword(password)
 
-        ref = db.reference('users')
+        user_data = {"name": name, "email": email, "password": hashed_password}
+        image_data = {"link": "", "userID": ""}
+        template_data = {"tempName": "", "config": ""}
 
-        new_user_ref = ref.push()
+        # Create user in Firebase Authentication
+        user = auth.create_user(
+            email=email,
+            password=password,
+            display_name=name
+        )
 
+        # Use the Firebase Authentication UID as the unique identifier
+        user_id = user.uid
+
+        # Add user data to 'users' collection with the Firebase UID
+        new_user_ref = db.collection('users').document(user_id)
         new_user_ref.set(user_data)
 
+        # Update image_data and template_data with the correct user ID
+        image_data["userID"] = user_id
+        template_data["userID"] = user_id
+
+        # Add image data to 'images' collection
+        new_image_ref = db.collection('images').add(image_data)
+
+        # Add template data to 'template' collection
+        new_template_ref = db.collection('template').add(template_data)
+
+        session['userEmail'] = email
+        session['userID'] = user_id
+
         return redirect(url_for('userLogin'))
-    
+
     return render_template('user/register.html')
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route("/document/home", methods=['GET', 'POST'])
 def documentHome():
@@ -107,76 +144,239 @@ def documentHome():
         return redirect(url_for('userLogin'))
 
     user_id = session['userID']
-    user_ref = db.reference('users').child(user_id)
+    user_ref = db.collection('users').document(user_id)
 
-    # Retrieve the images associated with the user from the Realtime Database
-    user_data = user_ref.get()
-    print(user_data)
-    if user_data and 'images' in user_data:
-        image_filenames = user_data['images'].split(', ')
-    else:
-        image_filenames = []
-    print(image_filenames)
+    # Retrieve the user's data from Firestore
+    user_data = user_ref.get().to_dict()
 
-    # Download the images from Firebase Storage
-    image_urls = []
-    for filename in image_filenames:
-        blob = storage.bucket().blob(f"{user_id}/{filename}")
+    # Initialize an empty list to store image links
+    links = []
+    image_data_list = []
+    unique_links = set()
 
-        expiration_time = datetime.utcnow() + timedelta(hours=1)
+    if request.method == 'POST':
+        action = request.form.get('action')
+        if action == 'uploadFile':
+            file = request.files['file']
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                blob = storage_client.blob(filename)
+                
+                # Set content type explicitly based on the file extension
+                blob.upload_from_file(file, content_type=f'image/{filename.rsplit(".", 1)[1].lower()}')
 
-        signed_url = blob.generate_signed_url(expiration=expiration_time, method='GET')
-        image_urls.append(signed_url)
+                # Update Firestore with the new image link
+                images_ref = db.collection('images')
 
-    print(image_urls)
-    return render_template('document/home.html', user_data=user_data, image_urls=image_urls)
+                new_link = f'https://firebasestorage.googleapis.com/v0/b/ocr-fyp-beea5.appspot.com/o/{filename.strip()}?alt=media'
+
+                # Create a new entry for each image
+                images_ref.add({'link': new_link, 'fileName': filename, 'dateCreated': datetime.utcnow(), 'userID': user_id})
+
+                return redirect(url_for('documentHome'))
+
+
+        elif action == 'searchFiles':
+            search_query = request.form.get('search').strip()
+
+            # Query Firestore for user's images
+            images_ref = db.collection('images')
+            query = images_ref.where('userID', '==', user_id).where('fileName', '>=', search_query).where('fileName', '<=', search_query + '\uf8ff')
+            images_query = query.stream()
+
+            if images_query is not None:
+                for image_doc in images_query:
+                    image_data = image_doc.to_dict()
+                    if 'link' in image_data:
+                        links = image_data['link'].split(',')
+                
+                        # Add image data to the list for each unique link
+                        for link in links:
+                            clean_link = link.strip()
+                            if clean_link not in unique_links:
+                                unique_links.add(clean_link)
+                                image_data_list.append({
+                                    'link': clean_link,
+                                    'date_created': image_data.get('dateCreated', 'N/A'),
+                                    'file_name': image_data.get('fileName', 'N/A')
+                                })
+
+                return render_template('document/home.html', image_data_list=image_data_list, user_data=user_data)
+
+        elif action == 'deleteImage':
+            image_to_delete = request.form.get('imageToDelete')
+
+            if image_to_delete:
+                # Delete logic here
+                images_ref = db.collection('images')
+                query = images_ref.where('userID', '==', user_id)
+                images_query = query.stream()
+
+                for image_doc in images_query:
+                    image_data = image_doc.to_dict()
+                    print(image_data)
+
+                    if 'link' in image_data:
+                        links = image_data['link'].split(',')
+                        if image_to_delete in links:
+                            links.remove(image_to_delete)
+                            new_links = ','.join(links)
+                            if new_links:
+                                images_ref.document(image_doc.id).update({'link': new_links})
+                            else:
+                                # If no more links, delete the image document
+                                images_ref.document(image_doc.id).delete()
+
+                                # Add the image to the trash
+                                trash_data = {
+                                    'link': image_to_delete,
+                                    'fileName': image_data.get('fileName', 'N/A'),
+                                    'userID': user_id,
+                                    'createdDate': image_data.get('dateCreated', 'N/A'),
+                                    'deletedDate': datetime.utcnow()
+                                }
+
+                                # Check if 'dateCreated' key is not present
+                                if 'dateCreated' not in image_data:
+                                    print("Warning: 'dateCreated' not present in image_data")
+
+                                    trash_ref = db.collection('trash').add(trash_data)
+
+                return redirect(url_for('documentHome'))
+
+        elif action == 'logout':
+            # Logout logic
+            session.pop('userID', None)
+            flash('You have been successfully logged out.', 'success')  # Optional: Display a flash message
+            return redirect(url_for('userLogin'))
+
+
+    # Query Firestore for user's images
+    images_ref = db.collection('images')
+    user_images = images_ref.where('userID', '==', user_id).stream()
+
+    for image_doc in user_images:
+        image_data = image_doc.to_dict()
+        if 'link' in image_data:
+            if ',' in image_data['link']:
+                links.append(image_data['link'].split(','))
+            else:
+                links.append(image_data['link'])
+
+                for link in links:
+                    clean_link = link.strip()
+                    if clean_link not in unique_links:
+                        unique_links.add(clean_link)
+                        image_data_list.append({
+                            'link': clean_link,
+                            'date_created': image_data.get('dateCreated', 'N/A'),
+                            'file_name': image_data.get('fileName', 'N/A')
+                        })
+
+    # Rest of the code remains the same as previously provided
+    print(image_data_list)
+    return render_template('document/home.html', image_data_list=image_data_list, user_data=user_data)
+
 
 @app.route("/document/profile", methods=['GET', 'POST'])
 def documentProfile():
+    user_id = session.get('userID')
 
     if 'userID' not in session:
         # Redirect to the login page if the user is not logged in or has no images
         return redirect(url_for('userLogin'))
-    
+
+
     if request.method == 'POST':
-
         action = request.form.get('action')
-
         if action == 'editUser':
-            # Get the user ID from the session
-            user_id = session.get('userID')
-
             # Get the updated values from the form
             name = request.form.get('name')
             email = request.form.get('email')
-            password = request.form.get('password')  # Assuming the password field is named 'cgpa'
+            new_password = request.form.get('password')  # Get the new password
 
-            # Update the user data in the Firebase Realtime Database
-            users_ref = db.reference('users')
-            user_ref = users_ref.child(user_id)
+            # Update the user data in Firestore
+            user_ref = db.collection('users').document(user_id)
 
-            user_ref.update({
+            updates = {
                 'name': name,
                 'email': email,
-                'password': password
+                # Update password only if a new password is provided
+                'password': new_password if new_password else user_ref.get().get('password')
                 # Add more fields as needed
-            })
+            }
 
-    user_id = session.get('userID')
+            user_ref.update(updates)
 
-    # Retrieve user data from Firebase Realtime Database
-    user_ref = db.reference('users').child(user_id)
-    user_data = user_ref.get()
+        elif action == 'logout':
+            # Logout logic
+            session.pop('userID', None)
+            flash('You have been successfully logged out.', 'success')  # Optional: Display a flash message
+            return redirect(url_for('userLogin'))
 
+    # Retrieve user data from Firestore
+    user_ref = db.collection('users').document(user_id)
+    user_data = user_ref.get().to_dict()
 
-    # Pass the image URLs to the template
+    # Pass the user data to the template
     return render_template('document/profile.html', user_id=user_id, user_data=user_data)
 
 
-@app.route("/document/settings", methods=['GET', 'POST'])
-def documentSettings():
 
-    return render_template('document/settings.html')
+@app.route("/document/imageDetail", methods=['GET', 'POST'])
+def documentImageDetail():
+    if request.method == 'POST':
+        # Get the image URL from the form data
+        image_url = request.form['imageUrl']
+
+        # Define the data for the POST request
+        data = {
+            "imageUrl": image_url,
+            "ocrMethod": "directToString",
+            "config": "",
+            "text": "extractedText",
+            "status": 200
+        }
+
+        # Define the API endpoint URL
+        API_ENDPOINT_URL = "https://526a-2001-d08-d5-3d25-258b-f3be-60b2-d241.ngrok-free.app/ocrrequest/"
+
+        # Send the POST request to the API endpoint
+        response = requests.post(API_ENDPOINT_URL, json=data)
+
+        # Handle the response as needed
+        if response.status_code == 200:
+            # Request was successful
+            result = response.json()
+            print("API Response:")
+            print(result)
+            api_response = result['text']
+            # Replace double newlines with a single <br>
+            api_response = re.sub(r'\n\n', '<br>', api_response)
+            # Then replace any remaining single newlines with <br>
+            api_response = re.sub(r'(?<!<br>)\n', '<br>', api_response)
+
+            return render_template('document/imageDetail.html', image_link=image_url, api_response=api_response)
+
+        else:
+            # Request failed
+            result = {
+            "error": "API request failed",
+            "status_code": response.status_code,
+            "response_text": response.text
+            }
+            print("Error: API request failed")
+            print("Status Code:", response.status_code)
+            print("Response Text:", response.text)
+
+        return render_template('document/imageDetail.html', image_link=image_url, result=result)
+    else:
+        # For GET requests, retrieve the image link from the query parameters
+        image_link = request.args.get('imageLink')
+
+        # Pass the image link to the template
+        return render_template('document/imageDetail.html', image_link=image_link)
+
 
 @app.route("/document/templates", methods=['GET', 'POST'])
 def documentTemplates():
@@ -185,5 +385,102 @@ def documentTemplates():
 
 @app.route("/document/trash", methods=['GET', 'POST'])
 def documentTrash():
+    if 'userID' not in session:
+        return redirect(url_for('userLogin'))
 
-    return render_template('document/trash.html')
+    user_id = session['userID']
+    # Initialize an empty list to store image links
+    links = []
+    trash_data_list = []
+    unique_links = set()
+
+    if request.method == 'POST':
+        action = request.form.get('action')
+
+        if action == 'deleteTrash':
+            # Retrieve the user's trash data from Firestore
+            trash_ref = db.collection('trash')
+            image_to_delete = request.form.get('imageToDelete')
+            print(image_to_delete)
+
+            if image_to_delete:
+                # Delete the specific image from the trash
+                trash_query = trash_ref.where('userID', '==', user_id).where('link', '==', image_to_delete).stream()
+                
+                for trash_doc in trash_query:
+                    trash_doc.reference.delete()
+
+                # Optionally, delete the corresponding image from Firebase Storage
+                try:
+                    file_name = image_to_delete.split('/')[-1].split('?')[0]  # Extract the file name from the URL
+                    bucket_name = 'ocr-fyp-beea5.appspot.com'
+                    storage_client = storage.bucket(bucket_name)
+                    blob = storage_client.blob(file_name)
+                    blob.delete()
+
+                except Exception as e:
+                    # Handle any errors that occur during deletion
+                    print(f"Error deleting file {image_to_delete}: {str(e)}")
+        
+
+
+        elif action == 'searchFiles':
+            search_query = request.form.get('search').strip().lower()
+
+            # Retrieve trash data from Firestore based on the search query
+            trash_ref = db.collection('trash')
+            query = trash_ref.where('userID', '==', user_id).where('fileName', '>=', search_query).where('fileName', '<=', search_query + '\uf8ff')
+            trash_query = query.stream()
+
+            # Initialize an empty list to store search results
+            trash_data_list = []
+
+            if trash_query is not None:
+                for trash_doc in trash_query:
+                    trash_data = trash_doc.to_dict()
+
+                    if 'link' in trash_data:
+                        links = trash_data['link'].split(',')
+                        for link in links:
+                            clean_link = link.strip()
+                            # Check if the search query matches the filename
+                            if search_query in trash_data.get('fileName', '').lower():
+                                trash_data_list.append({
+                                    'link': clean_link,
+                                    'file_name': trash_data.get('fileName', 'N/A'),
+                                    'date_created': trash_data.get('createdDate', 'N/A'),
+                                    'date_deleted': trash_data.get('deletedDate', 'N/A')
+                                })
+                                break  # Break out of the loop after finding a matching link
+
+            return render_template('document/trash.html', trash_data_list=trash_data_list)
+
+
+            
+        
+        elif action == 'logout':
+            # Logout logic
+            session.pop('userID', None)
+            flash('You have been successfully logged out.', 'success')  # Optional: Display a flash message
+            return redirect(url_for('userLogin'))
+
+
+    # Retrieve trash data from Firestore
+    trash_ref = db.collection('trash')
+    trash_query = trash_ref.where('userID', '==', user_id).stream()
+
+    for trash_doc in trash_query:
+        trash_data = trash_doc.to_dict()
+        print(trash_data)
+        if 'link' in trash_data:
+            links = trash_data['link'].split(',')
+            for link in links:
+                clean_link = link.strip()
+                trash_data_list.append({
+                    'link': clean_link,
+                    'file_name': trash_data.get('fileName', 'N/A'),  # Extract the file name from the URL
+                    'date_created': trash_data.get('createdDate', 'N/A'),
+                    'date_deleted': trash_data.get('deletedDate', 'N/A')
+                })
+
+    return render_template('document/trash.html', trash_data_list=trash_data_list)
