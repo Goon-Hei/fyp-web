@@ -396,7 +396,7 @@ def documentImageDetail():
                     print("Json data:",data)
 
                     # Define the API endpoint URL
-                    API_ENDPOINT_URL = "https://526a-2001-d08-d5-3d25-258b-f3be-60b2-d241.ngrok-free.app/ocrrequest/"
+                    API_ENDPOINT_URL = "https://bdad-2001-d08-d5-3d25-258b-f3be-60b2-d241.ngrok-free.app/ocrrequest/"
 
                     # Send the POST request to the API endpoint
                     response = requests.post(API_ENDPOINT_URL, json=data)
