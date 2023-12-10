@@ -326,62 +326,124 @@ def documentProfile():
 @app.route("/document/imageDetail", methods=['GET', 'POST'])
 def documentImageDetail():
     if request.method == 'POST':
-        # Get the image URL from the form data
-        image_url = request.form['imageUrl']
+        action = request.form.get('action')
+        if action == 'OCR':
+            # Get the image URL from the form data
+            image_url = request.form['imageUrl']
 
-        # Define the data for the POST request
-        data = {
-            "imageUrl": image_url,
-            "ocrMethod": "directToString",
-            "config": "",
-            "text": "extractedText",
-            "status": 200
-        }
-
-        # Define the API endpoint URL
-        API_ENDPOINT_URL = "https://526a-2001-d08-d5-3d25-258b-f3be-60b2-d241.ngrok-free.app/ocrrequest/"
-
-        # Send the POST request to the API endpoint
-        response = requests.post(API_ENDPOINT_URL, json=data)
-
-        # Handle the response as needed
-        if response.status_code == 200:
-            # Request was successful
-            result = response.json()
-            print("API Response:")
-            print(result)
-            api_response = result['text']
-            # Replace double newlines with a single <br>
-            api_response = re.sub(r'\n\n', '<br>', api_response)
-            # Then replace any remaining single newlines with <br>
-            api_response = re.sub(r'(?<!<br>)\n', '<br>', api_response)
-
-            return render_template('document/imageDetail.html', image_link=image_url, api_response=api_response)
-
-        else:
-            # Request failed
-            result = {
-            "error": "API request failed",
-            "status_code": response.status_code,
-            "response_text": response.text
+            # Define the data for the POST request
+            data = {
+                "imageUrl": image_url,
+                "ocrMethod": "direcToString",
+                "tempName": "",
+                "config": "",
             }
-            print("Error: API request failed")
-            print("Status Code:", response.status_code)
-            print("Response Text:", response.text)
 
-        return render_template('document/imageDetail.html', image_link=image_url, result=result)
-    else:
-        # For GET requests, retrieve the image link from the query parameters
-        image_link = request.args.get('imageLink')
+            # Define the API endpoint URL
+            API_ENDPOINT_URL = "https://bdad-2001-d08-d5-3d25-258b-f3be-60b2-d241.ngrok-free.app/ocrrequest/"
 
-        # Pass the image link to the template
-        return render_template('document/imageDetail.html', image_link=image_link)
+            # Send the POST request to the API endpoint
+            response = requests.post(API_ENDPOINT_URL, json=data)
+
+            # Handle the response as needed
+            if response.status_code == 200:
+                # Request was successful
+                result = response.json()
+                print("API Response:")
+                print(result)
+                api_response = result['text']
+                # Replace double newlines with a single <br>
+                api_response = re.sub(r'\n\n', '<br>', api_response)
+                # Then replace any remaining single newlines with <br>
+                api_response = re.sub(r'(?<!<br>)\n', '<br>', api_response)
+
+                return render_template('document/imageDetail.html', image_link=image_url, api_response=api_response)
+
+            else:
+                image_url = request.form['imageUrl']
+                print("Testing2:", image_url)
+                print('Error uploading image:', response.text)
+
+                return render_template('document/imageDetail.html', image_link=image_url)
+            
+        elif action == 'studentCard':
+    
+            templateName = request.form['tempName']
+            image_url = request.form['imageUrl']
+            print("Testing:", image_url)
+
+            query_ref = db.collection("template").where("tempName", "==", templateName)
+
+            try:
+                docs = query_ref.stream()
+                config_list = []  # Initialize a list to store 'config' values
+
+                for doc in docs:
+                    if doc.exists:
+                        document_data = doc.to_dict()
+                        if document_data.get('tempName') == templateName:
+                            config_list.append(document_data.get('config'))
+
+                if config_list:  # Check if the list is not empty
+                    # Define the data for the POST request using the list of 'config' values
+                    data = {
+                        "imageUrl": image_url,
+                        "ocrMethod": "template",
+                        "tempName": templateName,
+                        "config": config_list,
+                    }
+
+                    print("Json data:",data)
+
+                    # Define the API endpoint URL
+                    API_ENDPOINT_URL = "https://526a-2001-d08-d5-3d25-258b-f3be-60b2-d241.ngrok-free.app/ocrrequest/"
+
+                    # Send the POST request to the API endpoint
+                    response = requests.post(API_ENDPOINT_URL, json=data)
+
+                    # Handle the response as needed
+                    if response.status_code == 200:
+                        # Request was successful
+                        result = response.json()
+                        print("API Response:")
+                        print(result)
+                        api_response = result['text']
+                        # Replace double newlines with a single <br>
+                        api_response = re.sub(r'\n\n', '<br>', api_response)
+                        # Then replace any remaining single newlines with <br>
+                        api_response = re.sub(r'(?<!<br>)\n', '<br>', api_response)
+
+                        return render_template('document/imageDetail.html', image_link=image_url, api_response=api_response)
+
+                    else:
+                        image_url = request.form['imageUrl']
+                        print("Before setting image_url:", image_url)
+                        print('Error uploading image:', response.text)
+
+                        return render_template('document/imageDetail.html', image_link=image_url)
+
+                    # The rest of your code...
+                else:
+                    print(f"No matching documents found for tempName: {templateName}")
+
+            except Exception as e:
+                # Handle exceptions, log, or return an error page
+                print(f"Error retrieving documents: {e}")
+
+    # For GET requests, retrieve the image link from the query parameters
+    image_link = request.args.get('imageLink')
+
+    # Pass the image link to the template
+    return render_template('document/imageDetail.html', image_link=image_link)
 
 
 @app.route("/document/templates", methods=['GET', 'POST'])
 def documentTemplates():
 
-    return render_template('document/templates.html')
+    if 'userID' not in session:
+        return redirect(url_for('userLogin'))
+    
+    
 
 @app.route("/document/trash", methods=['GET', 'POST'])
 def documentTrash():

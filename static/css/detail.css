@@ -1442,10 +1442,15 @@ body {
     /* Remove the fixed height to allow the image to scale */
 }
 
+#button-and-response-container {
+  display: flex;
+  flex-direction: column; /* Stack elements horizontally */
+}
+
 #button-container {
   flex: 1;
   display: flex;
-  flex-direction: column; /* Stack elements vertically */
+  flex-direction: row; /* Stack elements vertically */
   align-items: center;
   justify-content: flex-start; /* Align to the top */
   background-color: #f0f0f0;
@@ -1456,11 +1461,21 @@ body {
   height: 1200px;
 }
 
+#stud-button,
 #post-button {
   padding: 10px 20px;
   font-size: 16px;
   cursor: pointer;
   z-index: 5; /* Make sure the button is above the response */
+  margin: 10px; /* Add some margin between the buttons */
+}
+
+#stud-button {
+  order: -1; /* Move this button to the beginning of the flex container */
+}
+
+#post-button {
+  order: 0; /* Keep the default order for post-button */
 }
 
 #api-response {
@@ -1468,7 +1483,7 @@ body {
   background-color: #fff;
   padding: 10px;
   border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   text-align: center;
   position: absolute;
   top: 100px; /* Position at the top of the button container */
@@ -1477,5 +1492,7 @@ body {
   z-index: 2; /* Ensure it's below the button */
   font-size: 12px;
 }
+
+
 
   

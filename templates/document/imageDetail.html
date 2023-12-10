@@ -98,14 +98,21 @@
             <div id="image-container">
                 <img src="{{ image_link }}" alt="Image">
             </div>
-            <div id="button-container">
-                <!-- This div will hold the API response and will be displayed above the button -->
-                <form method="POST"
-                    action="{{ url_for('documentImageDetail') }}">
-                    <input type="hidden" name="imageUrl"
-                        value="{{ image_link }}">
-                    <button type="submit" id="post-button">OCR</button>
-                </form>
+            <div id="button-and-response-container">
+                <div id="button-container">
+                    <!-- This div will hold the API response and will be displayed above the button -->
+                    <form method="POST" action="{{ url_for('documentImageDetail') }}">
+                        <input type="hidden" name="imageUrl" value="{{ image_link }}">
+                        <input type="hidden" name="tempName" value="studentCard">
+                        <input type="hidden" name="action" value="studentCard">
+                        <button type="submit" id="stud-button">StudentCard</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('documentImageDetail') }}">
+                        <input type="hidden" name="imageUrl" value="{{ image_link }}">
+                        <input type="hidden" name="action" value="OCR">
+                        <button type="submit" id="post-button">OCR</button>
+                    </form>
+                </div>
                 {% if api_response %}
                 <div id="api-response">{{ api_response|safe }}</div>
                 {% endif %}
