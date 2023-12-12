@@ -37,7 +37,7 @@
             rel="stylesheet">
 
         <!-- Template Main CSS File -->
-        <link href="{{ url_for('static', filename='css/detail.css') }}"
+        <link href="{{ url_for('static', filename='css/custom.css') }}"
             rel="stylesheet">
     </head>
 
@@ -94,47 +94,66 @@
     </div>
   </section>End Hero -->
         <!-- Replace 'your-image-url.jpg' with the actual URL of your image -->
-        <div class="big-container">
-            <div id="image-container">
-                <img src="{{ image_link }}" alt="Image">
+        <div class="table-container container d-flex">
+            <div class="table-wrapper">
+                <table class="table table-striped table-hover me-5">
+                    <thead>
+                        <tr>
+                            <th>level</th>
+                            <th>block_num</th>
+                            <th>left</th>
+                            <th>top</th>
+                            <th>width</th>
+                            <th>height</th>
+                            <th>conf</th>
+                            <th>text</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if result %}
+                        {% for item in result %}
+                        <tr>
+                            <td>{{ item['level'] }}</td>
+                            <td>{{ item['block_num'] }}</td>
+                            <td>{{ item['left'] }}</td>
+                            <td>{{ item['top'] }}</td>
+                            <td>{{ item['width'] }}</td>
+                            <td>{{ item['height'] }}</td>
+                            <td>{{ item['conf'] }}</td>
+                            <td>{{ item['text'] }}</td>
+                        </tr>
+                        {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
             </div>
-            <div id="button-and-response-container">
-                <div id="button-container">
-                    <!-- This div will hold the API response and will be displayed above the button -->
-                    {% for template in templates %}
-                    <form method="POST"
-                        action="{{ url_for('documentImageDetail') }}">
-                        <input type="hidden" name="imageUrl"
-                            value="{{ image_link }}">
-                        <input type="hidden" name="tempName" value="{{ template.tempName }}">
-                        <input type="hidden" name="action" value="{{ template.tempName }}">
-                        <button type="submit" id="stud-button">{{ template.tempName }}</button>
-                    </form>
-                    {% endfor %}
-                    <form method="POST"
-                        action="{{ url_for('documentImageDetail') }}">
-                        <input type="hidden" name="imageUrl"
-                            value="{{ image_link }}">
-                        <input type="hidden" name="action" value="OCR">
-                        <button type="submit" id="post-button">OCR</button>
-                    </form>
-                </div>
-                <!-- {% for item in api_response %}
+            <div><!-- This div will hold the API response and will be displayed above the button -->
+                <form method="POST" action="{{ url_for('customTemplate') }}">
+                    <label for="userInput">Enter Text:</label>
+                    <input type="hidden" name="action" value="confirm">
+                    <textarea id="userInput" name="userInput"
+                        placeholder="Type here"></textarea>
+                    <button type="submit" id="confirm-button">confirm</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- {% for item in api_response %}
                 <div id="api-response">{{ item['Field'] }}: {{ item['Text'] }}</div>
                 {% endfor %} -->
-                {% if ocr_response %}
-                <div id="api-response">{{ ocr_response|safe }}</div>
-                {% endif %}
-                {% if api_response %}
+
+        <!-- {% if result %}
+                {% for item in result['data'] %}
+                <div id="api-response">{{ item['text'] }}</div>
+                {% endfor %}
+                {% endif %} -->
+        <!-- {% if api_response %}
                 <div id="api-response">
                     {% for item in api_response %}
                     {{ item['Text'] }}{% if not loop.last %} {% endif %}
                     {% endfor %}
                 </div>
-                {% endif %}
-            </div>
-        </div>
-
+                {% endif %} -->
         <a href="#"
             class="back-to-top d-flex align-items-center justify-content-center"><i
                 class="bi bi-arrow-up-short"></i></a>

@@ -1,3 +1,5 @@
+from cgi import FieldStorage
+import io
 from flask import Flask, flash, render_template, jsonify, request, redirect, url_for, session
 import firebase_admin
 import pyrebase
@@ -12,6 +14,10 @@ import requests
 import json
 import re
 from datetime import datetime
+import base64
+import json
+from PIL import Image
+from io import BytesIO
 
 ALLOWED_EXTENSIONS = {'pdf', 'jpeg', 'jpg', 'png'}
 
@@ -159,11 +165,24 @@ def documentHome():
         if action == 'uploadFile':
             file = request.files['file']
             if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
+
+                if file.filename.lower().endswith('.png'):
+                    image = Image.open(file.stream)
+
+                    jpg_image_buffer = io.BytesIO()
+                    image.convert('RGB').save(jpg_image_buffer, format="JPEG")
+                    jpg_image_buffer.seek(0)
+
+                    byte_data = jpg_image_buffer.read()
+
+                filename = secure_filename(file.filename.rsplit('.', 1)[0] + '.jpg')
                 blob = storage_client.blob(filename)
                 
                 # Set content type explicitly based on the file extension
-                blob.upload_from_file(file, content_type=f'image/{filename.rsplit(".", 1)[1].lower()}')
+                blob.upload_from_string(
+                    byte_data,
+                    content_type='image/jpeg'
+                )
 
                 # Update Firestore with the new image link
                 images_ref = db.collection('images')
@@ -327,20 +346,35 @@ def documentProfile():
 def documentImageDetail():
     if request.method == 'POST':
         action = request.form.get('action')
+        print("ACtion", action)
         if action == 'OCR':
             # Get the image URL from the form data
             image_url = request.form['imageUrl']
 
+            query_ref = db.collection("template")
+
+            docs = query_ref.stream()
+            templates = []
+            for doc in docs:
+                if doc.exists:
+                    document_data = doc.to_dict()
+                    print("docData", document_data)
+                    template_name = document_data.get('tempName')
+                    template_data = {
+                            "tempName": template_name,
+                    }
+                    templates.append(template_data)
+
             # Define the data for the POST request
             data = {
                 "imageUrl": image_url,
-                "ocrMethod": "direcToString",
+                "ocrMethod": "directToString",
                 "tempName": "",
                 "config": "",
             }
 
             # Define the API endpoint URL
-            API_ENDPOINT_URL = "https://bdad-2001-d08-d5-3d25-258b-f3be-60b2-d241.ngrok-free.app/ocrrequest/"
+            API_ENDPOINT_URL = "https://73bd-2001-d08-d5-3d25-4c2-1fc1-b8e9-edfa.ngrok-free.app/ocrrequest/"
 
             # Send the POST request to the API endpoint
             response = requests.post(API_ENDPOINT_URL, json=data)
@@ -351,90 +385,107 @@ def documentImageDetail():
                 result = response.json()
                 print("API Response:")
                 print(result)
-                api_response = result['text']
+                ocr_response = result['text']
                 # Replace double newlines with a single <br>
-                api_response = re.sub(r'\n\n', '<br>', api_response)
+                ocr_response = re.sub(r'\n\n', '<br>', ocr_response)
                 # Then replace any remaining single newlines with <br>
-                api_response = re.sub(r'(?<!<br>)\n', '<br>', api_response)
+                ocr_response = re.sub(r'(?<!<br>)\n', '<br>', ocr_response)
 
-                return render_template('document/imageDetail.html', image_link=image_url, api_response=api_response)
+                return render_template('document/imageDetail.html', image_link=image_url, ocr_response=ocr_response, templates=templates)
 
             else:
                 image_url = request.form['imageUrl']
                 print("Testing2:", image_url)
                 print('Error uploading image:', response.text)
 
-                return render_template('document/imageDetail.html', image_link=image_url)
-            
-        elif action == 'studentCard':
-    
+                return render_template('document/imageDetail.html', image_link=image_url, templates=templates)
+        else:
             templateName = request.form['tempName']
             image_url = request.form['imageUrl']
             print("Testing:", image_url)
 
-            query_ref = db.collection("template").where("tempName", "==", templateName)
+            templates_ref = db.collection("template")
 
+            docs = templates_ref.stream()
+            templates = []
+            for doc in docs:
+                if doc.exists:
+                    document_data = doc.to_dict()
+                    template_name = document_data.get('tempName')
+                    template_data = {
+                        "tempName": template_name,
+                    }
+                    templates.append(template_data)
+
+            query_ref = db.collection("template").where("tempName", "==", templateName)
             try:
                 docs = query_ref.stream()
-                config_list = []  # Initialize a list to store 'config' values
-
                 for doc in docs:
                     if doc.exists:
                         document_data = doc.to_dict()
-                        if document_data.get('tempName') == templateName:
-                            config_list.append(document_data.get('config'))
+                        config = document_data.get('config')
+                        preConfig = document_data.get('preProcessingConfig')
 
-                if config_list:  # Check if the list is not empty
-                    # Define the data for the POST request using the list of 'config' values
-                    data = {
+                data = {
                         "imageUrl": image_url,
                         "ocrMethod": "template",
-                        "tempName": templateName,
-                        "config": config_list,
-                    }
+                        "config": config,
+                        "preProcessingConfig": preConfig,
+                        }
 
-                    print("Json data:",data)
+                print("Json data:",data)
 
-                    # Define the API endpoint URL
-                    API_ENDPOINT_URL = "https://bdad-2001-d08-d5-3d25-258b-f3be-60b2-d241.ngrok-free.app/ocrrequest/"
+                # Define the API endpoint URL
+                API_ENDPOINT_URL = "https://73bd-2001-d08-d5-3d25-4c2-1fc1-b8e9-edfa.ngrok-free.app/ocrrequest/"
 
-                    # Send the POST request to the API endpoint
-                    response = requests.post(API_ENDPOINT_URL, json=data)
+                # Send the POST request to the API endpoint
+                response = requests.post(API_ENDPOINT_URL, json=data)
 
-                    # Handle the response as needed
-                    if response.status_code == 200:
-                        # Request was successful
-                        result = response.json()
-                        print("API Response:")
-                        print(result)
-                        api_response = result['text']
-                        # Replace double newlines with a single <br>
-                        api_response = re.sub(r'\n\n', '<br>', api_response)
-                        # Then replace any remaining single newlines with <br>
-                        api_response = re.sub(r'(?<!<br>)\n', '<br>', api_response)
+                # Handle the response as needed
+                if response.status_code == 200:
+                    # Request was successful
+                    result = response.json()
+                    print("API Response:")
+                    print(result)
+                    api_response = result['text']
+                    # # Replace double newlines with a single <br>
+                    # api_response = re.sub(r'\n\n', '<br>', api_response)
+                    # # Then replace any remaining single newlines with <br>
+                    # api_response = re.sub(r'(?<!<br>)\n', '<br>', api_response)
+                    # print("testing123",image_url)
 
-                        return render_template('document/imageDetail.html', image_link=image_url, api_response=api_response)
+                    return render_template('document/imageDetail.html', image_link=image_url, api_response=api_response, templates=templates)
 
-                    else:
-                        image_url = request.form['imageUrl']
-                        print("Before setting image_url:", image_url)
-                        print('Error uploading image:', response.text)
-
-                        return render_template('document/imageDetail.html', image_link=image_url)
-
-                    # The rest of your code...
                 else:
-                    print(f"No matching documents found for tempName: {templateName}")
+                    image_url = request.form['imageUrl']
+                    print("Before setting image_url:", image_url)
+                    print('Error uploading image:', response.text)
 
+                    return render_template('document/imageDetail.html', image_link=image_url, templates=templates)
             except Exception as e:
                 # Handle exceptions, log, or return an error page
                 print(f"Error retrieving documents: {e}")
 
     # For GET requests, retrieve the image link from the query parameters
-    image_link = request.args.get('imageLink')
 
-    # Pass the image link to the template
-    return render_template('document/imageDetail.html', image_link=image_link)
+    image_link = request.args.get('imageLink')
+    query_ref = db.collection("template")
+
+    docs = query_ref.stream()
+    templates = []
+    for doc in docs:
+        if doc.exists:
+            document_data = doc.to_dict()
+            print("docData", document_data)
+            template_name = document_data.get('tempName')
+            template_data = {
+                    "tempName": template_name,
+            }
+            templates.append(template_data)
+            print("tempDAta", templates)
+
+    return render_template('document/imageDetail.html', image_link=image_link, templates=templates)
+
 
 
 @app.route("/document/templates", methods=['GET', 'POST'])
@@ -443,7 +494,131 @@ def documentTemplates():
     if 'userID' not in session:
         return redirect(url_for('userLogin'))
     
+    if request.method == 'POST':
+        # Assuming the form has a name attribute, change it accordingly
+        if request.form['action'] == 'CreateTemplate':
+            # Redirect to templateDetail route
+            return redirect(url_for('uploadImage'))
+        
+
+    query_ref = db.collection("template")
+
+    docs = query_ref.stream()
+    templates = []
+    for doc in docs:
+        if doc.exists:
+            document_data = doc.to_dict()
+            print("docData", document_data)
+            template_name = document_data.get('tempName')
+            config = document_data.get('config')
+            template_data = {
+                    "tempName": template_name,
+                    "config": config,
+            }
+            templates.append(template_data)
+            print("tempDAta", templates)
+
+    return render_template('document/templates.html', templates=templates)
+
+@app.route("/document/uploadImage", methods=['GET', 'POST'])
+def uploadImage():
+
+    if 'userID' not in session:
+        return redirect(url_for('userLogin'))
     
+    if request.method == 'POST':
+        if request.form.get('action') == 'uploadFile':
+            uploaded_file = request.files['file']
+            print("testingFile456", uploaded_file)
+            if uploaded_file and allowed_file(uploaded_file.filename):
+                # Convert PNG to JPG
+                if uploaded_file.filename.lower().endswith('.png'):
+                    image = Image.open(uploaded_file.stream)
+
+                    jpg_image_buffer = io.BytesIO()
+                    image.convert('RGB').save(jpg_image_buffer, format="JPEG")
+                    jpg_image_buffer.seek(0)
+
+                    byte_data = jpg_image_buffer.read()
+                    print("byte_data", byte_data)
+
+
+                #     # Use the JPG buffer for further processing
+                    # uploaded_file = jpg_buffer
+
+                # # Generate a new filename with the original filename and a new extension
+                filename = secure_filename(uploaded_file.filename.rsplit('.', 1)[0] + '.jpg')
+                print("testingFile123", filename)
+                # Rest of your code...
+                new_link = f'https://firebasestorage.googleapis.com/v0/b/ocr-fyp-beea5.appspot.com/o/{filename.strip()}?alt=media'
+                print("testingLink", new_link)
+                # Download the image content from the URL
+                response = requests.get(new_link)
+
+                encoded_string = base64.b64encode(byte_data).decode('utf-8')
+
+                API_ENDPOINT_URL = "https://73bd-2001-d08-d5-3d25-4c2-1fc1-b8e9-edfa.ngrok-free.app/newtemplate/"
+
+                data = {"image": encoded_string}
+
+                response = requests.post(API_ENDPOINT_URL, json=data)
+
+                if response.status_code == 200:
+                #     Request was successful
+                    result = response.json()
+                    print("testingresult", result)
+
+                return render_template('document/templateDetail.html', new_link=new_link, result=result)
+    
+    # Add a default return statement for cases when the request method is not 'POST'
+    return render_template('document/uploadImage.html')
+    
+@app.route("/document/templateDetail", methods=['GET', 'POST'])
+def templateDetail():
+    
+
+    return render_template('document/templateDetail.html')
+
+@app.route("/document/customTemplate", methods=['GET', 'POST'])
+def customTemplate():
+
+    if request.method == 'POST':
+        action = request.form.get('action')
+
+        if action == 'confirm':
+            user_input = request.form.get('userInput')
+
+            # Convert the JSON string to a dictionary
+            user_input_dict = json.loads(user_input)
+
+            # Set the data in Firestore
+            db.collection('template').document().set(user_input_dict)
+
+            query = db.collection('template').stream()
+
+            # Convert the documents to a list of dictionaries
+            templates = [doc.to_dict() for doc in query]
+
+            return render_template('document/templates.html', templates=templates)
+
+        # Retrieve the 'result' data from the form submission
+        result_json = request.form.get('result')
+
+        # Replace single quotes with double quotes in the JSON string
+        result_json = result_json.replace("'", "\"")
+
+        try:
+            # Parse the JSON string to a Python object
+            result = json.loads(result_json)
+            print("Testing Result:", result)
+            # Do something with the 'result' data in the customTemplate route
+            # You can pass 'result' to the customTemplate.html template or process it as needed
+            return render_template('document/customTemplate.html', result=result)
+        except json.JSONDecodeError as e:
+            print("Error decoding JSON:", e)
+
+    # Handle GET request (if needed)
+    return render_template('document/customTemplate.html')
 
 @app.route("/document/trash", methods=['GET', 'POST'])
 def documentTrash():
