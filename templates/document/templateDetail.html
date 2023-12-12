@@ -6,7 +6,7 @@
         <meta charset="utf-8">
         <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-        <title>OCR</title>
+        <title>FYP - OCR</title>
         <meta content name="description">
         <meta content name="keywords">
 
@@ -73,7 +73,11 @@
                     </div>
                     <h6 class="help mt-3 text-white">Need help?</h6>
                     <p class="text-white">Please check our docs</p>
-                    <button id="documentation">Documentation</button>
+                    <a
+                        href="https://receptive-dish-04e.notion.site/OCR-Documentation-5f3837d9a724496fb39f0d0e6508dbcc"
+                        target="_blank">
+                        <button id="documentation">Documentation</button>
+                    </a>
                 </div>
 
                 <form action="{{ url_for('documentHome') }}" method="POST">
@@ -102,19 +106,21 @@
                 <div id="button-container">
                     <!-- This div will hold the API response and will be displayed above the button -->
                     <form method="POST" action="{{ url_for('customTemplate') }}">
-                        <input type="hidden" name="imageUrl" value="{{ new_link }}">
+                        <input type="hidden" name="imageUrl"
+                            value="{{ new_link }}">
                         <input type="hidden" name="action" value="next">
                         <!-- Add a hidden input for the 'result' data -->
-                        <input type="hidden" name="result" value="{{ result['data'] }}">
+                        <input type="hidden" name="result"
+                            value="{{ result['data'] }}">
                         <button type="submit" id="next-button">Next</button>
                     </form>
                 </div>
                 <!-- {% for item in api_response %}
                 <div id="api-response">{{ item['Field'] }}: {{ item['Text'] }}</div>
                 {% endfor %} -->
-                <div class="container">
-                    <div class="table-wrapper">
-                        <table class="table table-striped table-hover">
+                <div class="template-container container">
+                    <div class="template-wrapper table-wrapper">
+                        <table class="template-table table table-striped table-hover">
                             <thead>
                                 <tr>
                                     <th>level</th>
@@ -146,18 +152,6 @@
                         </table>
                     </div>
                 </div>
-                <!-- {% if result %}
-                {% for item in result['data'] %}
-                <div id="api-response">{{ item['text'] }}</div>
-                {% endfor %}
-                {% endif %} -->
-                <!-- {% if api_response %}
-                <div id="api-response">
-                    {% for item in api_response %}
-                    {{ item['Text'] }}{% if not loop.last %} {% endif %}
-                    {% endfor %}
-                </div>
-                {% endif %} -->
             </div>
         </div>
 

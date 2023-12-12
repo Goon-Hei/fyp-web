@@ -1497,5 +1497,17 @@ table.table td:last-child i {
   font-size: 12px;
 }
 
+.template-container{
+  max-height: 700px; /* Set the maximum height as per your requirement */
+  overflow-y: auto;
+}
 
+.template-wrapper{
+  width: 100%;
+}
+
+.template-table{
+  width: 100%;
+  margin-bottom: 0;
+}
   

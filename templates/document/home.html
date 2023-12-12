@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-    <title>OCR</title>
+    <title>FYP - OCR</title>
     <meta content name="description">
     <meta content name="keywords">
 
@@ -67,7 +67,9 @@
           </div>
           <h6 class="help mt-3 text-white">Need help?</h6>
           <p class="text-white">Please check our docs</p>
-          <button id="documentation">Documentation</button>
+          <a href="https://receptive-dish-04e.notion.site/OCR-Documentation-5f3837d9a724496fb39f0d0e6508dbcc" target="_blank">
+            <button id="documentation">Documentation</button>
+          </a>
         </div>
 
         <form action="{{ url_for('documentHome') }}" method="POST">
@@ -171,15 +173,17 @@
                     <td><a
                         href="{{ url_for('documentImageDetail', imageLink=image_data.link) }}"
                         title="More Details">
-                        <img src="{{ image_data.link }}" class="img-fluid" alt>
+                        <img src="{{ image_data.link }}" class="img-fluid vh-50" alt>
                       </a></td>
                     <td>{{ image_data.file_name }}</td>
                     <td>{{ image_data.date_created.strftime('%d/%m/%Y') }}</td>
                     <td>
-                      <form method="POST" action="{{ url_for('documentHome') }}">
+                      <form method="POST"
+                        action="{{ url_for('documentHome') }}">
                         <input type="hidden" name="imageToDelete"
                           value="{{ image_data.link }}">
-                        <button type="submit" name="action" value="deleteImage"
+                        <button type="submit" name="action"
+                          value="deleteImage"
                           onsubmit="return confirm('Are you sure to delete this image?')">Delete</button>
                       </form>
                     </td>

@@ -6,7 +6,7 @@
         <meta charset="utf-8">
         <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-        <title>OCR</title>
+        <title>FYP - OCR</title>
         <meta content name="description">
         <meta content name="keywords">
 
@@ -73,7 +73,11 @@
                     </div>
                     <h6 class="help mt-3 text-white">Need help?</h6>
                     <p class="text-white">Please check our docs</p>
-                    <button id="documentation">Documentation</button>
+                    <a
+                        href="https://receptive-dish-04e.notion.site/OCR-Documentation-5f3837d9a724496fb39f0d0e6508dbcc"
+                        target="_blank">
+                        <button id="documentation">Documentation</button>
+                    </a>
                 </div>
 
                 <form action="{{ url_for('documentHome') }}" method="POST">
@@ -106,9 +110,12 @@
                         action="{{ url_for('documentImageDetail') }}">
                         <input type="hidden" name="imageUrl"
                             value="{{ image_link }}">
-                        <input type="hidden" name="tempName" value="{{ template.tempName }}">
-                        <input type="hidden" name="action" value="{{ template.tempName }}">
-                        <button type="submit" id="stud-button">{{ template.tempName }}</button>
+                        <input type="hidden" name="tempName"
+                            value="{{ template.tempName }}">
+                        <input type="hidden" name="action"
+                            value="{{ template.tempName }}">
+                        <button type="submit" id="stud-button">{{
+                            template.tempName }}</button>
                     </form>
                     {% endfor %}
                     <form method="POST"
@@ -128,7 +135,8 @@
                 {% if api_response %}
                 <div id="api-response">
                     {% for item in api_response %}
-                    {{ item['Text'] }}{% if not loop.last %} {% endif %}
+                    {{ item['Field'] }}: {{ item['Text'] }}<br>{% if not
+                    loop.last %} {% endif %}
                     {% endfor %}
                 </div>
                 {% endif %}

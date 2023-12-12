@@ -6,7 +6,7 @@
         <meta charset="utf-8">
         <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-        <title>OCR</title>
+        <title>FYP - OCR</title>
         <meta content name="description">
         <meta content name="keywords">
 
@@ -73,7 +73,11 @@
                     </div>
                     <h6 class="help mt-3 text-white">Need help?</h6>
                     <p class="text-white">Please check our docs</p>
-                    <button id="documentation">Documentation</button>
+                    <a
+                        href="https://receptive-dish-04e.notion.site/OCR-Documentation-5f3837d9a724496fb39f0d0e6508dbcc"
+                        target="_blank">
+                        <button id="documentation">Documentation</button>
+                    </a>
                 </div>
 
                 <form action="{{ url_for('documentHome') }}" method="POST">
@@ -122,10 +126,13 @@
                                 </div>
                             </form>
                         </div>
-                        <form method="post" action="{{ url_for('documentTemplates') }}">
+                        <form method="post"
+                            action="{{ url_for('documentTemplates') }}">
                             <div class="input-group justify-content-end me-4">
                                 <div class="input-group-append">
-                                    <button type="submit" name="action" value="CreateTemplate" class="btn btn-outline-secondary">
+                                    <button type="submit" name="action"
+                                        value="CreateTemplate"
+                                        class="btn btn-outline-secondary">
                                         Create Template
                                     </button>
                                 </div>
@@ -135,60 +142,22 @@
 
                     <div class="container">
                         <div class="table-wrapper">
+                            
                             <table class="table table-striped table-hover">
                                 <thead>
                                     <tr>
-                                        <th>
-                                            <span class="custom-checkbox">
-                                                <input type="checkbox"
-                                                    id="selectAll">
-                                                <label for="selectAll"></label>
-                                            </span>
-                                        </th>
                                         <th>Name</th>
-                                        <th>Date Created</th>
-                                        <th>Last Modified</th>
-                                        <th>Owned By</th>
-                                        <th>Description</th>
-                                        <th>Action</th>
                                     </tr>
                                 </thead>
+                                {% for template in templates %}
                                 <tbody>
                                     <tr>
-                                        <td>
-                                            <span class="custom-checkbox">
-                                                <input type="checkbox"
-                                                    id="checkbox1"
-                                                    name="options[]" value="1">
-                                                <label for="checkbox1"></label>
-                                            </span>
-                                        </td>
-                                        <td>Electric Bill Template</td>
-                                        <td>29/9/2023</td>
-                                        <td>30/9/2023</td>
-                                        <td>Me</td>
-                                        <td>This is a template made for scanning
-                                            electric bill template</td>
-                                        <td>
-                                            <a href="#editEmployeeModal"
-                                                class="edit" data-toggle="modal"><i
-                                                    class="bi bi-play-circle"></i></a>
-                                            <a href="#deleteEmployeeModal"
-                                                class="delete"
-                                                data-toggle="modal"><i
-                                                    class="bi bi-pencil-square"></i></a>
-                                            <a href="#deleteEmployeeModal"
-                                                class="delete"
-                                                data-toggle="modal"><i
-                                                    class="bi bi-trash"></i></a>
-                                            <a href="#deleteEmployeeModal"
-                                                class="delete"
-                                                data-toggle="modal"><i
-                                                    class="bi bi-box-arrow-up"></i></a>
-                                        </td>
+                                        <td>{{ template['tempName'] }}</td>
                                     </tr>
                                 </tbody>
+                                {% endfor %}
                             </table>
+                            
                         </div>
                     </div>
                 </div>
@@ -228,12 +197,11 @@
         <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
     </body>
-    <!-- Edit User Info Modal -->
+    <!-- Edit Template Info Modal -->
     <div class="modal fade" id="editInfoModal" tabindex="-1"
         aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <!-- Main form for creating a template -->
                 <form action="{{ url_for('documentTemplates') }}" method="POST"
                     enctype="multipart/form-data">
                     <input type="hidden" name="action" value="createTemplate">
@@ -245,27 +213,16 @@
                     <div class="modal-body">
                         <div class="panel-body">
                             <div class="form-group">
-                                <label for="tempName">Template Name</label>
-                                <input type="text" class="form-control"
-                                    id="tempName" name="tempName" required>
+                                <label for="userInput">Enter Text:</label>
+                                <textarea id="userInput" name="userInput"
+                                    placeholder="Type here"></textarea>
                             </div>
-                            <br />
-                            <div class="form-group">
-                                <!-- File input -->
-                                <label for="fileInput">Upload File</label>
-                                <div class="input-group mb-3">
-                                    <input type="file" class="form-control"
-                                        id="fileInput" name="file"
-                                        accept=".pdf, .jpeg, .jpg, .png">
-                                </div>
-                            </div>
-                            <br />
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary"
                             data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Create</button>
+                        <button type="submit" class="btn btn-primary">Edit</button>
                     </div>
                 </form>
             </div>

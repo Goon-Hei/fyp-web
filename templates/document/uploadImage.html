@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-    <title>OCR</title>
+    <title>FYP - OCR</title>
     <meta content name="description">
     <meta content name="keywords">
 
@@ -67,7 +67,11 @@
           </div>
           <h6 class="help mt-3 text-white">Need help?</h6>
           <p class="text-white">Please check our docs</p>
-          <button id="documentation">Documentation</button>
+          <a
+            href="https://receptive-dish-04e.notion.site/OCR-Documentation-5f3837d9a724496fb39f0d0e6508dbcc"
+            target="_blank">
+            <button id="documentation">Documentation</button>
+          </a>
         </div>
 
         <form action="{{ url_for('documentHome') }}" method="POST">
@@ -89,20 +93,20 @@
 
       <section id="portfolio" class="portfolio section-bg">
         <div class="container">
-            <div class="input-group">
-              <form action="{{ url_for('uploadImage') }}" method="POST"
-                enctype="multipart/form-data">
-                <input type="hidden" name="action" value="uploadFile">
-                <div class="input-group mb-3">
-                  <input type="file" class="form-control" id="fileInput"
-                    name="file" accept=".pdf, .jpeg, .jpg, .png">
-                  <div class="input-group-append">
-                    <button type="submit" class="btn btn-outline-secondary"><i
-                        class="bx bx-upload"></i></button>
-                  </div>
+          <div class="input-group">
+            <form action="{{ url_for('uploadImage') }}" method="POST"
+              enctype="multipart/form-data">
+              <input type="hidden" name="action" value="uploadFile">
+              <div class="input-group mb-3">
+                <input type="file" class="form-control" id="fileInput"
+                  name="file" accept=".pdf, .jpeg, .jpg, .png">
+                <div class="input-group-append">
+                  <button type="submit" class="btn btn-outline-secondary"><i
+                      class="bx bx-upload"></i></button>
                 </div>
-              </form>
-            </div>
+              </div>
+            </form>
+          </div>
         </div>
       </section><!-- End Portfolio Section -->
 

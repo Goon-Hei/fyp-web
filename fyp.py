@@ -175,24 +175,42 @@ def documentHome():
 
                     byte_data = jpg_image_buffer.read()
 
-                filename = secure_filename(file.filename.rsplit('.', 1)[0] + '.jpg')
-                blob = storage_client.blob(filename)
+                    filename = secure_filename(file.filename.rsplit('.', 1)[0] + '.jpg')
+                    blob = storage_client.blob(filename)
+                    
+                    # Set content type explicitly based on the file extension
+                    blob.upload_from_string(
+                        byte_data,
+                        content_type='image/jpeg'
+                    )
+
+                    # Update Firestore with the new image link
+                    images_ref = db.collection('images')
+
+                    new_link = f'https://firebasestorage.googleapis.com/v0/b/ocr-fyp-beea5.appspot.com/o/{filename.strip()}?alt=media'
+
+                    # Create a new entry for each image
+                    images_ref.add({'link': new_link, 'fileName': filename, 'dateCreated': datetime.utcnow(), 'userID': user_id})
+
+                    return redirect(url_for('documentHome'))
+                else:
+
+                    filename = secure_filename(file.filename)
+
+                    blob = storage_client.blob(filename)
                 
-                # Set content type explicitly based on the file extension
-                blob.upload_from_string(
-                    byte_data,
-                    content_type='image/jpeg'
-                )
+                    # Set content type explicitly based on the file extension
+                    blob.upload_from_file(file, content_type=f'image/{filename.rsplit(".", 1)[1].lower()}')
 
-                # Update Firestore with the new image link
-                images_ref = db.collection('images')
+                    # Update Firestore with the new image link
+                    images_ref = db.collection('images')
 
-                new_link = f'https://firebasestorage.googleapis.com/v0/b/ocr-fyp-beea5.appspot.com/o/{filename.strip()}?alt=media'
+                    new_link = f'https://firebasestorage.googleapis.com/v0/b/ocr-fyp-beea5.appspot.com/o/{filename.strip()}?alt=media'
 
-                # Create a new entry for each image
-                images_ref.add({'link': new_link, 'fileName': filename, 'dateCreated': datetime.utcnow(), 'userID': user_id})
+                    # Create a new entry for each image
+                    images_ref.add({'link': new_link, 'fileName': filename, 'dateCreated': datetime.utcnow(), 'userID': user_id})
 
-                return redirect(url_for('documentHome'))
+                    return redirect(url_for('documentHome'))
 
 
         elif action == 'searchFiles':
@@ -224,6 +242,7 @@ def documentHome():
 
         elif action == 'deleteImage':
             image_to_delete = request.form.get('imageToDelete')
+            print("dlt",image_to_delete)
 
             if image_to_delete:
                 # Delete logic here
@@ -233,10 +252,11 @@ def documentHome():
 
                 for image_doc in images_query:
                     image_data = image_doc.to_dict()
-                    print(image_data)
+                    print("imageDATA", image_data)
 
                     if 'link' in image_data:
                         links = image_data['link'].split(',')
+                        print("link",links)
                         if image_to_delete in links:
                             links.remove(image_to_delete)
                             new_links = ','.join(links)
@@ -255,6 +275,8 @@ def documentHome():
                                     'deletedDate': datetime.utcnow()
                                 }
 
+                                trash_ref = db.collection('trash').add(trash_data)
+
                                 # Check if 'dateCreated' key is not present
                                 if 'dateCreated' not in image_data:
                                     print("Warning: 'dateCreated' not present in image_data")
@@ -268,7 +290,6 @@ def documentHome():
             session.pop('userID', None)
             flash('You have been successfully logged out.', 'success')  # Optional: Display a flash message
             return redirect(url_for('userLogin'))
-
 
     # Query Firestore for user's images
     images_ref = db.collection('images')
@@ -425,12 +446,14 @@ def documentImageDetail():
                         document_data = doc.to_dict()
                         config = document_data.get('config')
                         preConfig = document_data.get('preProcessingConfig')
+                        psm= document_data.get('psm')
 
                 data = {
                         "imageUrl": image_url,
                         "ocrMethod": "template",
                         "config": config,
                         "preProcessingConfig": preConfig,
+                        "psm": psm
                         }
 
                 print("Json data:",data)
@@ -543,32 +566,64 @@ def uploadImage():
                     print("byte_data", byte_data)
 
 
-                #     # Use the JPG buffer for further processing
-                    # uploaded_file = jpg_buffer
+                    #     # Use the JPG buffer for further processing
+                        # uploaded_file = jpg_buffer
 
-                # # Generate a new filename with the original filename and a new extension
-                filename = secure_filename(uploaded_file.filename.rsplit('.', 1)[0] + '.jpg')
-                print("testingFile123", filename)
-                # Rest of your code...
-                new_link = f'https://firebasestorage.googleapis.com/v0/b/ocr-fyp-beea5.appspot.com/o/{filename.strip()}?alt=media'
-                print("testingLink", new_link)
-                # Download the image content from the URL
-                response = requests.get(new_link)
+                    # # Generate a new filename with the original filename and a new extension
+                    filename = secure_filename(uploaded_file.filename.rsplit('.', 1)[0] + '.jpg')
+                    print("testingFile123", filename)
+                    # Rest of your code...
+                    new_link = f'https://firebasestorage.googleapis.com/v0/b/ocr-fyp-beea5.appspot.com/o/{filename.strip()}?alt=media'
+                    print("testingLink", new_link)
+                    # Download the image content from the URL
+                    response = requests.get(new_link)
 
-                encoded_string = base64.b64encode(byte_data).decode('utf-8')
+                    encoded_string = base64.b64encode(byte_data).decode('utf-8')
 
-                API_ENDPOINT_URL = "https://73bd-2001-d08-d5-3d25-4c2-1fc1-b8e9-edfa.ngrok-free.app/newtemplate/"
+                    API_ENDPOINT_URL = "https://73bd-2001-d08-d5-3d25-4c2-1fc1-b8e9-edfa.ngrok-free.app/newtemplate/"
 
-                data = {"image": encoded_string}
+                    data = {"image": encoded_string}
 
-                response = requests.post(API_ENDPOINT_URL, json=data)
+                    response = requests.post(API_ENDPOINT_URL, json=data)
 
-                if response.status_code == 200:
-                #     Request was successful
-                    result = response.json()
-                    print("testingresult", result)
+                    if response.status_code == 200:
+                    #     Request was successful
+                        result = response.json()
+                        print("testingresult", result)
 
-                return render_template('document/templateDetail.html', new_link=new_link, result=result)
+                    return render_template('document/templateDetail.html', new_link=new_link, result=result)
+                
+                else:
+
+                    filename = secure_filename(uploaded_file.filename)
+
+                    file = request.files['file']
+                    image_data = file.read() 
+
+                    encoded_string = base64.b64encode(image_data).decode('utf-8')
+                    data = {"image": encoded_string}
+                    
+
+                    print("testingFile123", filename)
+                    # Rest of your code...
+                    new_link = f'https://firebasestorage.googleapis.com/v0/b/ocr-fyp-beea5.appspot.com/o/{filename.strip()}?alt=media'
+                    print("testingLink", new_link)
+                    # Download the image content from the URL
+                    response = requests.get(new_link)
+
+
+                    API_ENDPOINT_URL = "https://73bd-2001-d08-d5-3d25-4c2-1fc1-b8e9-edfa.ngrok-free.app/newtemplate/"
+
+
+                    response = requests.post(API_ENDPOINT_URL, json=data)
+
+                    if response.status_code == 200:
+                    #     Request was successful
+                        result = response.json()
+                        print("testingresult", result)
+
+                    return render_template('document/templateDetail.html', new_link=image_data, result=result)
+
     
     # Add a default return statement for cases when the request method is not 'POST'
     return render_template('document/uploadImage.html')
