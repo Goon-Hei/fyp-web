@@ -18,7 +18,7 @@ import json
 from PIL import Image
 from io import BytesIO
 
-ALLOWED_EXTENSIONS = {'pdf', 'jpeg', 'jpg', 'png'}
+ALLOWED_EXTENSIONS = {'jpeg', 'jpg', 'png'}
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
