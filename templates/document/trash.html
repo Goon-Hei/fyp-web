@@ -201,8 +201,17 @@
                                                 <input type="hidden"
                                                     name="imageToDelete"
                                                     value="{{ trash_data.link }}">
-                                                <button type="submit"
-                                                    onsubmit="return confirm('Are you sure to delete this image?')">Delete</button>
+                                                <button type="submit">Delete</button>
+                                            </form>
+                                            <form method="POST"
+                                                action="{{ url_for('documentTrash') }}">
+                                                <input type="hidden"
+                                                    name="action"
+                                                    value="restoreTrash">
+                                                <input type="hidden"
+                                                    name="imageToRestore"
+                                                    value="{{ trash_data.link }}">
+                                                <button type="submit">Restore</button>
                                             </form>
                                         </td>
                                     </tr>

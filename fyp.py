@@ -19,7 +19,7 @@ import json
 from PIL import Image
 from io import BytesIO
 
-ALLOWED_EXTENSIONS = {'pdf', 'jpeg', 'jpg', 'png'}
+ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png'}
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
@@ -142,6 +142,7 @@ def userRegister():
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 @app.route("/document/home", methods=['GET', 'POST'])
 def documentHome():
@@ -517,11 +518,37 @@ def documentTemplates():
     if 'userID' not in session:
         return redirect(url_for('userLogin'))
     
+    user_templates = []
     if request.method == 'POST':
         # Assuming the form has a name attribute, change it accordingly
         if request.form['action'] == 'CreateTemplate':
             # Redirect to templateDetail route
             return redirect(url_for('uploadImage'))
+        
+        elif request.form['action'] == 'logout':
+            # Logout logic
+            session.pop('userID', None)
+            flash('You have been successfully logged out.', 'success')  # Optional: Display a flash message
+            return redirect(url_for('userLogin'))
+
+        elif request.form['action'] == 'editTemplate':
+            # Get the edited template configuration from the form
+            
+            edited_config = request.form.get('userInput')
+
+            # Assuming you have a template ID available in the form
+            user_id = session['userID']
+            temp_name = request.form.get('tempName')
+
+            # Update the template configuration in Firestore based on userID and tempName
+            template_ref = db.collection("template").where('userID', '==', user_id).where('tempName', '==', temp_name)
+            template_docs = template_ref.stream()
+
+            for doc in template_docs:
+                doc.reference.update({'config': edited_config})
+                user_templates.append(doc.to_dict())
+
+            
         
 
     query_ref = db.collection("template")
@@ -541,7 +568,7 @@ def documentTemplates():
             templates.append(template_data)
             print("tempDAta", templates)
 
-    return render_template('document/templates.html', templates=templates)
+    return render_template('document/templates.html', user_templates=user_templates, templates=templates)
 
 @app.route("/document/uploadImage", methods=['GET', 'POST'])
 def uploadImage():
@@ -563,20 +590,6 @@ def uploadImage():
                     jpg_image_buffer.seek(0)
 
                     byte_data = jpg_image_buffer.read()
-                    print("byte_data", byte_data)
-
-
-                    #     # Use the JPG buffer for further processing
-                        # uploaded_file = jpg_buffer
-
-                    # # Generate a new filename with the original filename and a new extension
-                    filename = secure_filename(uploaded_file.filename.rsplit('.', 1)[0] + '.jpg')
-                    print("testingFile123", filename)
-                    # Rest of your code...
-                    new_link = f'https://firebasestorage.googleapis.com/v0/b/ocr-fyp-beea5.appspot.com/o/{filename.strip()}?alt=media'
-                    print("testingLink", new_link)
-                    # Download the image content from the URL
-                    response = requests.get(new_link)
 
                     encoded_string = base64.b64encode(byte_data).decode('utf-8')
 
@@ -591,25 +604,14 @@ def uploadImage():
                         result = response.json()
                         print("testingresult", result)
 
-                    return render_template('document/templateDetail.html', new_link=new_link, result=result)
+                    return render_template('document/templateDetail.html', image_data=encoded_string, result=result)
                 
                 else:
-
-                    filename = secure_filename(uploaded_file.filename)
-
-                    file = request.files['file']
-                    image_data = file.read() 
+                
+                    image_data = uploaded_file.read() 
 
                     encoded_string = base64.b64encode(image_data).decode('utf-8')
                     data = {"image": encoded_string}
-                    
-
-                    print("testingFile123", filename)
-                    # Rest of your code...
-                    new_link = f'https://firebasestorage.googleapis.com/v0/b/ocr-fyp-beea5.appspot.com/o/{filename.strip()}?alt=media'
-                    print("testingLink", new_link)
-                    # Download the image content from the URL
-                    response = requests.get(new_link)
 
 
                     API_ENDPOINT_URL = "https://73bd-2001-d08-d5-3d25-4c2-1fc1-b8e9-edfa.ngrok-free.app/newtemplate/"
@@ -622,7 +624,7 @@ def uploadImage():
                         result = response.json()
                         print("testingresult", result)
 
-                    return render_template('document/templateDetail.html', new_link=image_data, result=result)
+                    return render_template('document/templateDetail.html', image_data=encoded_string, result=result)
 
     
     # Add a default return statement for cases when the request method is not 'POST'
@@ -747,8 +749,30 @@ def documentTrash():
 
             return render_template('document/trash.html', trash_data_list=trash_data_list)
 
+        elif action == 'restoreTrash':
+            # Retrieve the user's trash data from Firestore
+            trash_ref = db.collection('trash')
+            image_to_restore = request.form.get('imageToRestore')
+            print(image_to_restore)
 
-            
+            if image_to_restore:
+                # Delete the specific image from the trash
+                trash_query = trash_ref.where('userID', '==', user_id).where('link', '==', image_to_restore).stream()
+
+                for trash_doc in trash_query:
+                    trash_data = trash_doc.to_dict()
+                    # Delete from trash collection
+                    trash_doc.reference.delete()
+
+                    # Add the image back to the images collection
+                    images_ref = db.collection('images')
+                    images_ref.add({
+                        'userID': user_id,
+                        'link': trash_data['link'],
+                        'dateCreated': trash_data['createdDate'],
+                        'fileName': trash_data['fileName'],  # Add other fields if needed
+                        # Add more fields if needed
+                    })
         
         elif action == 'logout':
             # Logout logic

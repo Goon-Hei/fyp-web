@@ -1445,3 +1445,8 @@ table.table .avatar {
   font-size: 16px;
   cursor: pointer;
 }
+
+#userInput {
+  width: 300px;
+  height: 500px;
+}

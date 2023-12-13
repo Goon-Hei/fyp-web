@@ -100,14 +100,14 @@
         <!-- Replace 'your-image-url.jpg' with the actual URL of your image -->
         <div class="big-container">
             <div id="image-container">
-                <img src="{{ new_link }}" alt="Image">
+                <img src="data:image/jpeg;base64,{{ image_data }}" alt="Your Image">
             </div>
             <div id="button-and-response-container">
                 <div id="button-container">
                     <!-- This div will hold the API response and will be displayed above the button -->
                     <form method="POST" action="{{ url_for('customTemplate') }}">
                         <input type="hidden" name="imageUrl"
-                            value="{{ new_link }}">
+                            value="data:image/jpeg;base64,{{ image_data }}">
                         <input type="hidden" name="action" value="next">
                         <!-- Add a hidden input for the 'result' data -->
                         <input type="hidden" name="result"
