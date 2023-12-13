@@ -19,7 +19,7 @@ import json
 from PIL import Image
 from io import BytesIO
 
-ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png'}
+ALLOWED_EXTENSIONS = {'pdf', 'jpeg', 'jpg', 'png'}
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
@@ -142,7 +142,6 @@ def userRegister():
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 
 @app.route("/document/home", methods=['GET', 'POST'])
 def documentHome():
@@ -450,7 +449,7 @@ def documentImageDetail():
                         psm= document_data.get('psm')
 
                 data = {
-                        "imageUrl": image_url,
+                        "imageUrl": image_url,      
                         "ocrMethod": "template",
                         "config": config,
                         "preProcessingConfig": preConfig,
@@ -518,22 +517,14 @@ def documentTemplates():
     if 'userID' not in session:
         return redirect(url_for('userLogin'))
     
-    user_templates = []
     if request.method == 'POST':
         # Assuming the form has a name attribute, change it accordingly
         if request.form['action'] == 'CreateTemplate':
             # Redirect to templateDetail route
             return redirect(url_for('uploadImage'))
-        
-        elif request.form['action'] == 'logout':
-            # Logout logic
-            session.pop('userID', None)
-            flash('You have been successfully logged out.', 'success')  # Optional: Display a flash message
-            return redirect(url_for('userLogin'))
-
         elif request.form['action'] == 'editTemplate':
             # Get the edited template configuration from the form
-            
+            user_templates = []
             edited_config = request.form.get('userInput')
 
             # Assuming you have a template ID available in the form
@@ -547,7 +538,6 @@ def documentTemplates():
             for doc in template_docs:
                 doc.reference.update({'config': edited_config})
                 user_templates.append(doc.to_dict())
-
             
         
 
@@ -568,7 +558,7 @@ def documentTemplates():
             templates.append(template_data)
             print("tempDAta", templates)
 
-    return render_template('document/templates.html', user_templates=user_templates, templates=templates)
+    return render_template('document/templates.html', templates=templates)
 
 @app.route("/document/uploadImage", methods=['GET', 'POST'])
 def uploadImage():

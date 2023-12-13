@@ -142,65 +142,22 @@
 
                     <div class="container">
                         <div class="table-wrapper">
-
+                            
                             <table class="table table-striped table-hover">
                                 <thead>
                                     <tr>
                                         <th>Name</th>
-                                        <th>Action</th>
                                     </tr>
                                 </thead>
+                                {% for template in templates %}
                                 <tbody>
-                                    {% for template in templates %}
-                                        <tr>
-                                            <td>{{ template['tempName'] }}</td>
-                                            <td>
-                                                <form method="POST" action="{{ url_for('documentTemplates') }}">
-                                                    <input type="hidden" name="tempName" value="{{ template['tempName'] }}">
-                                                    <input type="hidden" name="action" value="editTemplate">
-                                                    <button type="button" class="btn-edit-template" data-bs-toggle="modal" data-bs-target="#editInfoModal">Edit</button>
-                                                </form>
-                                            </form>
-                                            <form method="POST"
-                                                action="{{ url_for('documentTemplates') }}">
-                                                <input type="hidden"
-                                                    name="tempName"
-                                                    value="{{ template['tempName'] }}">
-                                                <button type="submit"
-                                                    name="action"
-                                                    value="deleteImage"><i
-                                                        class="bi bi-trash"></i></button>
-                                            </form>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                    
-                                    {% for user_template in user_templates %}
-                                        <tr>
-                                            <td>{{ user_template['tempName'] }}</td>
-                                            <td>
-                                                <form method="POST" action="{{ url_for('documentTemplates') }}">
-                                                    <input type="hidden" name="tempName" value="{{ user_template['tempName'] }}">
-                                                    <input type="hidden" name="action" value="editTemplate">
-                                                    <button type="button" class="btn-edit-template" data-bs-toggle="modal" data-bs-target="#editInfoModal">Edit</button>
-                                                </form>
-                                            </form>
-                                            <form method="POST"
-                                                action="{{ url_for('documentTemplates') }}">
-                                                <input type="hidden"
-                                                    name="tempName"
-                                                    value="{{ user_template['tempName'] }}">
-                                                <button type="submit"
-                                                    name="action"
-                                                    value="deleteImage"><i
-                                                        class="bi bi-trash"></i></button>
-                                            </form>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
+                                    <tr>
+                                        <td>{{ template['tempName'] }}</td>
+                                    </tr>
                                 </tbody>
+                                {% endfor %}
                             </table>
-
+                            
                         </div>
                     </div>
                 </div>
@@ -247,21 +204,16 @@
             <div class="modal-content">
                 <form action="{{ url_for('documentTemplates') }}" method="POST"
                     enctype="multipart/form-data">
-                    <input type="hidden" name="action" value="editTemplate">
-                    <input type="hidden" name="template_id" id="editTemplateID"
-                        value>
-                    <input type="hidden" name="tempName" id="editTempName" value>
+                    <input type="hidden" name="action" value="createTemplate">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Edit
-                            Template</h5>
+                        <h5 class="modal-title" id="exampleModalLabel">Edit Info</h5>
                         <button type="button" class="btn-close"
                             data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <div class="panel-body">
                             <div class="form-group">
-                                <label for="userInput">Template Configuration:</label>
-                                <!-- Display the template configuration in the textarea -->
+                                <label for="userInput">Enter Text:</label>
                                 <textarea id="userInput" name="userInput"
                                     placeholder="Type here"></textarea>
                             </div>
@@ -270,8 +222,7 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary"
                             data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Save
-                            Changes</button>
+                        <button type="submit" class="btn btn-primary">Edit</button>
                     </div>
                 </form>
             </div>
