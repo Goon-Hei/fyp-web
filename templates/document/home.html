@@ -168,6 +168,7 @@
                   </tr>
                 </thead>
                 <tbody>
+                  {% if image_data_list %}
                   {% for image_data in image_data_list %}
                   <tr>
                     <td><a
@@ -176,6 +177,7 @@
                         <img src="{{ image_data.link }}" class="img-fluid vh-50" alt>
                       </a></td>
                     <td>{{ image_data.file_name }}</td>
+                    
                     <td>{{ image_data.date_created.strftime('%d/%m/%Y') }}</td>
                     <td>
                       <form method="POST"
@@ -189,6 +191,7 @@
                     </td>
                   </tr>
                   {% endfor %}
+                  {% endif %}
                 </tbody>
               </table>
             </div>

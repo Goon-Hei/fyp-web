@@ -105,7 +105,7 @@ def userRegister():
         hashed_password = hashPassword(password)
 
         user_data = {"name": name, "email": email, "password": hashed_password}
-        image_data = {"link": "", "userID": ""}
+        image_data = {"link": "", "userID": "", "dateCreated": "", "fileName": ""}
         template_data = {"tempName": "", "config": ""}
 
         # Create user in Firebase Authentication
@@ -394,7 +394,7 @@ def documentImageDetail():
             }
 
             # Define the API endpoint URL
-            API_ENDPOINT_URL = "https://73bd-2001-d08-d5-3d25-4c2-1fc1-b8e9-edfa.ngrok-free.app/ocrrequest/"
+            API_ENDPOINT_URL = "https://a05b-2001-d08-d5-28c3-98e9-a199-4580-ca26.ngrok-free.app/ocrrequest/"
 
             # Send the POST request to the API endpoint
             response = requests.post(API_ENDPOINT_URL, json=data)
@@ -458,7 +458,7 @@ def documentImageDetail():
                 print("Json data:",data)
 
                 # Define the API endpoint URL
-                API_ENDPOINT_URL = "https://73bd-2001-d08-d5-3d25-4c2-1fc1-b8e9-edfa.ngrok-free.app/ocrrequest/"
+                API_ENDPOINT_URL = "https://a05b-2001-d08-d5-28c3-98e9-a199-4580-ca26.ngrok-free.app/ocrrequest/"
 
                 # Send the POST request to the API endpoint
                 response = requests.post(API_ENDPOINT_URL, json=data)
@@ -582,7 +582,7 @@ def uploadImage():
 
                     encoded_string = base64.b64encode(byte_data).decode('utf-8')
 
-                    API_ENDPOINT_URL = "https://73bd-2001-d08-d5-3d25-4c2-1fc1-b8e9-edfa.ngrok-free.app/newtemplate/"
+                    API_ENDPOINT_URL = "https://a05b-2001-d08-d5-28c3-98e9-a199-4580-ca26.ngrok-free.app/newtemplate/"
 
                     data = {"image": encoded_string}
 
@@ -603,7 +603,7 @@ def uploadImage():
                     data = {"image": encoded_string}
 
 
-                    API_ENDPOINT_URL = "https://73bd-2001-d08-d5-3d25-4c2-1fc1-b8e9-edfa.ngrok-free.app/newtemplate/"
+                    API_ENDPOINT_URL = "https://a05b-2001-d08-d5-28c3-98e9-a199-4580-ca26.ngrok-free.app/newtemplate/"
 
 
                     response = requests.post(API_ENDPOINT_URL, json=data)
