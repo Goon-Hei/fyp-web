@@ -17,12 +17,25 @@ import base64
 import json
 from PIL import Image
 from io import BytesIO
+from flask_mail import Mail, Message
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired
+
+
 
 ALLOWED_EXTENSIONS = {'jpeg', 'jpg', 'png'}
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
+app.config['SECRET_KEY'] = app.secret_key
+app.config['MAIL_SERVER']="smtp.gmail.com"
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USERNAME'] = "goonhei123@gmail.com"
+app.config['MAIL_PASSWORD'] = "baej tmjj ukgi jlne"
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+mail = Mail(app)
 
+s = URLSafeTimedSerializer('Thisisasecret!')
 
 cred = credentials.Certificate("ocr-fyp-beea5-firebase-adminsdk-lik81-e109b66cf1.json")
 firebase_admin.initialize_app(cred, {
@@ -93,6 +106,70 @@ def userLogin():
 
     return render_template('user/login.html', error_message=error_message)
 
+@app.route("/user/resetPasswordRequest", methods=['GET', 'POST'])
+def reset_password_request():
+    if request.method == 'POST':
+        email = request.form['email']
+
+        users_ref = db.collection('users')
+        query = users_ref.where('email', '==', email).limit(1)
+        user_docs = query.stream()
+
+        # Check if a user with the specified email exists
+        for user_doc in user_docs:
+            user_ref = user_doc.reference
+            
+            # Perform any other necessary operations with the user_ref
+
+            return render_template('user/resetPassword.html', email=email)
+
+        # If user with the specified email is not found, you can handle it accordingly
+        if not user_docs:
+            # Handle the case where no user with the specified email was found
+            # You can render an error message or redirect to another page
+            error_message = 'No such email'
+
+            return render_template('user/resetPasswordRequest.html', error_message=error_message)
+    
+    return render_template('user/resetPasswordRequest.html')
+
+    
+
+# Assuming you have initialized your Flask app and Firebase Admin SDK
+
+@app.route('/user/resetPassword', methods=['GET', 'POST'])
+def reset_password():
+
+    if request.method == 'POST':
+        password = request.form.get('password')
+        email = request.form.get('email')
+
+
+        if email:
+            # Query Firestore to find the user with the specified email
+            users_ref = db.collection('users')
+            query = users_ref.where('email', '==', email).limit(1)
+            user_docs = query.stream()
+
+            # Check if a user with the specified email exists
+            for user_doc in user_docs:
+                user_ref = user_doc.reference
+
+                # Update the password in Firestore
+                user_ref.update({'password': hashPassword(password)})
+
+                return redirect(url_for('userLogin'))
+    
+        else:
+
+            error_message = 'No such user'
+
+            return render_template('user/resetPassword.html',error_message=error_message)
+
+
+    return render_template('user/resetPassword.html')
+
+
 
 @app.route("/user/register", methods=['GET', 'POST'])
 def userRegister():
@@ -105,8 +182,8 @@ def userRegister():
         hashed_password = hashPassword(password)
 
         user_data = {"name": name, "email": email, "password": hashed_password}
-        image_data = {"link": "", "userID": "", "dateCreated": "", "fileName": ""}
-        template_data = {"tempName": "", "config": ""}
+        # image_data = {"link": "", "userID": "", "dateCreated": "", "fileName": ""}
+        # template_data = {"tempName": "", "config": ""}
 
         # Create user in Firebase Authentication
         user = auth.create_user(
@@ -122,15 +199,15 @@ def userRegister():
         new_user_ref = db.collection('users').document(user_id)
         new_user_ref.set(user_data)
 
-        # Update image_data and template_data with the correct user ID
-        image_data["userID"] = user_id
-        template_data["userID"] = user_id
+        # # Update image_data and template_data with the correct user ID
+        # image_data["userID"] = user_id
+        # template_data["userID"] = user_id
 
-        # Add image data to 'images' collection
-        new_image_ref = db.collection('images').add(image_data)
+        # # Add image data to 'images' collection
+        # new_image_ref = db.collection('images').add(image_data)
 
-        # Add template data to 'template' collection
-        new_template_ref = db.collection('template').add(template_data)
+        # # Add template data to 'template' collection
+        # new_template_ref = db.collection('template').add(template_data)
 
         session['userEmail'] = email
         session['userID'] = user_id
@@ -331,18 +408,12 @@ def documentProfile():
         if action == 'editUser':
             # Get the updated values from the form
             name = request.form.get('name')
-            email = request.form.get('email')
-            new_password = request.form.get('password')  # Get the new password
 
             # Update the user data in Firestore
             user_ref = db.collection('users').document(user_id)
 
             updates = {
                 'name': name,
-                'email': email,
-                # Update password only if a new password is provided
-                'password': new_password if new_password else user_ref.get().get('password')
-                # Add more fields as needed
             }
 
             user_ref.update(updates)
@@ -356,6 +427,7 @@ def documentProfile():
     # Retrieve user data from Firestore
     user_ref = db.collection('users').document(user_id)
     user_data = user_ref.get().to_dict()
+    print("userdata",  user_data)
 
     # Pass the user data to the template
     return render_template('document/profile.html', user_id=user_id, user_data=user_data)
@@ -394,7 +466,7 @@ def documentImageDetail():
             }
 
             # Define the API endpoint URL
-            API_ENDPOINT_URL = "https://a05b-2001-d08-d5-28c3-98e9-a199-4580-ca26.ngrok-free.app/ocrrequest/"
+            API_ENDPOINT_URL = "https://c5df-103-52-192-245.ngrok-free.app/ocrrequest/"
 
             # Send the POST request to the API endpoint
             response = requests.post(API_ENDPOINT_URL, json=data)
@@ -458,7 +530,7 @@ def documentImageDetail():
                 print("Json data:",data)
 
                 # Define the API endpoint URL
-                API_ENDPOINT_URL = "https://a05b-2001-d08-d5-28c3-98e9-a199-4580-ca26.ngrok-free.app/ocrrequest/"
+                API_ENDPOINT_URL = "https://c5df-103-52-192-245.ngrok-free.app/ocrrequest/"
 
                 # Send the POST request to the API endpoint
                 response = requests.post(API_ENDPOINT_URL, json=data)
@@ -522,21 +594,41 @@ def documentTemplates():
             # Redirect to templateDetail route
             return redirect(url_for('uploadImage'))
         elif request.form['action'] == 'editTemplate':
-            # Get the edited template configuration from the form
-            user_templates = []
-            edited_config = request.form.get('userInput')
-
             # Assuming you have a template ID available in the form
-            user_id = session['userID']
             temp_name = request.form.get('tempName')
 
-            # Update the template configuration in Firestore based on userID and tempName
-            template_ref = db.collection("template").where('userID', '==', user_id).where('tempName', '==', temp_name)
+            query_ref = db.collection("template").where('tempName' , "==", temp_name)
+            docs = query_ref.stream()
+            templates = []
+            for doc in docs:
+                templates.append(doc.to_dict())
+            print("testingTemplatesss",templates)
+
+            return render_template('document/editTemplatePreProcessingConfig.html', temp_name=temp_name, templates=templates)
+
+
+        elif request.form['action'] == 'searchTemplate':
+            search_query = request.form.get('search')
+            templates = []
+            # Search for templates based on tempName
+            template_ref = db.collection("template").where('tempName', '>=', search_query).where('tempName', '<=', search_query + '\uf8ff')
             template_docs = template_ref.stream()
 
             for doc in template_docs:
-                doc.reference.update({'config': edited_config})
-                user_templates.append(doc.to_dict())
+                templates.append(doc.to_dict())
+            
+            return render_template('document/templates.html', templates=templates)
+        
+        elif request.form['action'] == 'deleteTemplate':
+            temp_name = request.form.get('tempName')
+
+            # Delete the template based on tempName
+            query_ref = db.collection("template").where('tempName', '==', temp_name)
+            docs = query_ref.stream()
+            for doc in docs:
+                doc.reference.delete()
+            # Redirect back to the templates page or any other appropriate page
+            return redirect(url_for('documentTemplates'))
             
         
 
@@ -559,6 +651,116 @@ def documentTemplates():
 
     return render_template('document/templates.html', templates=templates)
 
+@app.route("/document/editTemplatePreProcessingConfig", methods=['GET', 'POST'])
+def documentEditTemplatePreProcessingConfig():
+
+    if 'userID' not in session:
+        return redirect(url_for('userLogin'))
+    
+    if request.method == 'POST':
+        # Assuming the form has a name attribute, change it accordingly
+        if request.form['action'] == 'editTemplatePreProcessingConfig':
+            # Assuming you have a template ID available in the form
+            temp_name = request.form.get('tempName')
+            templates_json = request.form.get('templates')
+            print("5126161", templates_json)
+
+            # Replace single quotes with double quotes
+            templates = templates_json.replace("'", '"')
+            print("25122561251251", templates_json)
+
+            # templates = json.loads(templates_json)
+
+            # print("testingTemplateEdit", templates)
+
+            # config_data = templates[0]['config']
+            # print("616136116713", config_data)
+
+            psm = int(request.form.get('psm'))
+            dilated_iterations = int(request.form.get('dilated_iterations'))
+            eroded_iterations = int(request.form.get('eroded_iterations'))
+            threshold = convertToBool(request.form.get('threshold'))
+            kernel_size = int(request.form.get('kernelSize'))
+            equalize_hist = convertToBool(request.form.get('equalizeHist'))
+            morphologyEx_iterations = int(request.form.get('morphologyEx_iterations'))
+            dilated = convertToBool(request.form.get('dilated'))
+            morphologyEx = convertToBool(request.form.get('morphologyEx'))
+            eroded = convertToBool(request.form.get('eroded'))
+            denoised = convertToBool(request.form.get('denoised'))
+
+            passingData = {
+                    "psm": psm,
+                    "preProcessingConfig": {
+                        "dilated_iterations": dilated_iterations,
+                        "eroded_iterations": eroded_iterations,
+                        "threshold": threshold,
+                        "kernelSize": kernel_size,
+                        "equalizeHist": equalize_hist,
+                        "morphologyEx_iterations": morphologyEx_iterations,
+                        "dilated": dilated,
+                        "morphologyEx": morphologyEx,
+                        "eroded": eroded,
+                        "denoised": denoised
+                    }
+                }
+            
+            passData = json.dumps(passingData, ensure_ascii=False)
+
+            return render_template('document/editTemplateConfig.html', temp_name=temp_name, passData=passData,templates=templates)
+
+
+    return render_template('document/templates.html')
+
+@app.route("/document/editTemplateConfig", methods=['GET', 'POST'])
+def documentEditTemplateConfig():
+
+    if 'userID' not in session:
+        return redirect(url_for('userLogin'))
+    
+    if request.method == 'POST':
+        if request.form['action'] == 'editTemplatePreProcessingConfig':
+
+            temp_name = request.form.get('tempName')
+            field_names = request.form.getlist('fieldName[]')
+            extract_methods = request.form.getlist('extract_method[]')
+            values = request.form.getlist('value[]')
+
+            input_data = [{'fieldName': fn, 'extractMethod': em, 'value': v}
+                        for fn, em, v in zip(field_names, extract_methods, values)]
+
+            data_dict = json.loads(request.form.get('preconfig'))
+            psm = data_dict.get('psm')
+            pre_processing_config = data_dict.get('preProcessingConfig')
+
+            data_to_update = {
+                'tempName': temp_name,
+                'psm': psm,
+                'preProcessingConfig': pre_processing_config,
+                'config': input_data
+            }
+
+            # Query Firestore to find the document to update
+            query = db.collection('template').where('tempName', '==', temp_name).stream()
+
+            # Assuming there's only one document with the specified temp_name
+            for doc in query:
+                # Update the existing document
+                doc.reference.update(data_to_update)
+
+            # Fetch updated data from Firestore to display
+            query = db.collection('template').stream()
+            templates = [doc.to_dict() for doc in query]
+
+            return render_template('document/templates.html', templates=templates)
+    
+    return render_template('document/editTemplateConfig.html')
+
+def convertToBool(value):
+  if value == "True":
+    return True
+  else:
+     return False
+
 @app.route("/document/uploadImage", methods=['GET', 'POST'])
 def uploadImage():
 
@@ -568,12 +770,12 @@ def uploadImage():
     if request.method == 'POST':
         if request.form.get('action') == 'uploadFile':
             uploaded_file = request.files['file']
-            print("testingFile456", uploaded_file)
+            print("testingFile456", uploaded_file.filename)
             if uploaded_file and allowed_file(uploaded_file.filename):
                 # Convert PNG to JPG
                 if uploaded_file.filename.lower().endswith('.png'):
                     image = Image.open(uploaded_file.stream)
-
+                    print("testingFile733", image)
                     jpg_image_buffer = io.BytesIO()
                     image.convert('RGB').save(jpg_image_buffer, format="JPEG")
                     jpg_image_buffer.seek(0)
@@ -582,48 +784,106 @@ def uploadImage():
 
                     encoded_string = base64.b64encode(byte_data).decode('utf-8')
 
-                    API_ENDPOINT_URL = "https://a05b-2001-d08-d5-28c3-98e9-a199-4580-ca26.ngrok-free.app/newtemplate/"
-
-                    data = {"image": encoded_string}
-
-                    response = requests.post(API_ENDPOINT_URL, json=data)
-
-                    if response.status_code == 200:
-                    #     Request was successful
-                        result = response.json()
-                        print("testingresult", result)
-
-                    return render_template('document/templateDetail.html', image_data=encoded_string, result=result)
+                    return render_template('document/uploadImage.html', image_data=encoded_string,image=uploaded_file.filename)
                 
                 else:
                 
-                    image_data = uploaded_file.read() 
+                    image_data = uploaded_file.read()
 
                     encoded_string = base64.b64encode(image_data).decode('utf-8')
-                    data = {"image": encoded_string}
+                    
+                    return render_template('document/uploadImage.html', image_data=encoded_string)
+
+        elif request.form.get('action') == 'confirm':
+
+                image_data = request.form.get('imageUrl')
+                psm = int(request.form.get('psm'))
+                dilated_iterations = int(request.form.get('dilated_iterations'))
+                eroded_iterations = int(request.form.get('eroded_iterations'))
+                threshold = convertToBool(request.form.get('threshold'))
+                kernel_size = int(request.form.get('kernelSize'))
+                equalize_hist = convertToBool(request.form.get('equalizeHist'))
+                morphologyEx_iterations = int(request.form.get('morphologyEx_iterations'))
+                dilated = convertToBool(request.form.get('dilated'))
+                morphologyEx = convertToBool(request.form.get('morphologyEx'))
+                eroded = convertToBool(request.form.get('eroded'))
+                denoised = convertToBool(request.form.get('denoised'))
 
 
-                    API_ENDPOINT_URL = "https://a05b-2001-d08-d5-28c3-98e9-a199-4580-ca26.ngrok-free.app/newtemplate/"
+                data = {
+                    "image": image_data,
+                    "psm": psm,
+                    "preProcessingConfig": {
+                        "dilated_iterations": dilated_iterations,
+                        "eroded_iterations": eroded_iterations,
+                        "threshold": threshold,
+                        "kernelSize": kernel_size,
+                        "equalizeHist": equalize_hist,
+                        "morphologyEx_iterations": morphologyEx_iterations,
+                        "dilated": dilated,
+                        "morphologyEx": morphologyEx,
+                        "eroded": eroded,
+                        "denoised": denoised
+                    }
+                }
+                
+                passingData = {
+                    "psm": psm,
+                    "preProcessingConfig": {
+                        "dilated_iterations": dilated_iterations,
+                        "eroded_iterations": eroded_iterations,
+                        "threshold": threshold,
+                        "kernelSize": kernel_size,
+                        "equalizeHist": equalize_hist,
+                        "morphologyEx_iterations": morphologyEx_iterations,
+                        "dilated": dilated,
+                        "morphologyEx": morphologyEx,
+                        "eroded": eroded,
+                        "denoised": denoised
+                    }
+                }
+
+                # Convert the dictionary to a JSON string with double quotes
+                passData = json.dumps(passingData, ensure_ascii=False)
+
+                print("passData", passData)
+
+                API_ENDPOINT_URL = "https://c5df-103-52-192-245.ngrok-free.app/newtemplate/"
 
 
-                    response = requests.post(API_ENDPOINT_URL, json=data)
+                response = requests.post(API_ENDPOINT_URL, json=data)
 
-                    if response.status_code == 200:
-                    #     Request was successful
-                        result = response.json()
-                        print("testingresult", result)
+                if response.status_code == 200:
+                #     Request was successful
+                    result = response.json()
+                    passResult = result['data']
+                    passresult = json.dumps(passResult, ensure_ascii=False)
+                    pass_result = json.loads(passresult)
+                    print("testingresult", pass_result)
 
-                    return render_template('document/templateDetail.html', image_data=encoded_string, result=result)
-
+                return render_template('document/templateDetail.html', image_data=image_data, pass_result=pass_result, passData=passData)
     
     # Add a default return statement for cases when the request method is not 'POST'
     return render_template('document/uploadImage.html')
     
 @app.route("/document/templateDetail", methods=['GET', 'POST'])
 def templateDetail():
+
+    if request.method == 'POST':
+        if request.form.get('action') == 'next':
+
+            passData = request.form.get('passData')
+            pass_result_str = request.form.get('result')
+            pass_result_str = pass_result_str.replace("'", "\"")
+            
+            # Parse the JSON string into a Python list
+            pass_result = json.loads(pass_result_str)
+            
+            print("passingData", passData)
+            print("passingResult", pass_result)
     
 
-    return render_template('document/templateDetail.html')
+            return render_template('document/customTemplate.html', passData=passData,pass_result=pass_result)
 
 @app.route("/document/customTemplate", methods=['GET', 'POST'])
 def customTemplate():
@@ -632,39 +892,49 @@ def customTemplate():
         action = request.form.get('action')
 
         if action == 'confirm':
-            user_input = request.form.get('userInput')
+            temp_name = request.form.get('tempName')
+            field_names = request.form.getlist('fieldName[]')
+            extract_methods = request.form.getlist('extract_method[]')
+            values = request.form.getlist('value[]')
 
-            # Convert the JSON string to a dictionary
-            user_input_dict = json.loads(user_input)
+            input_data = [{'fieldName': fn, 'extractMethod': em, 'value': v}
+                          for fn, em, v in zip(field_names, extract_methods, values)]
 
-            # Set the data in Firestore
-            db.collection('template').document().set(user_input_dict)
+            # Assuming 'config' is a JSON string containing 'psm' and 'preProcessingConfig'
+            data_dict = json.loads(request.form.get('config'))
+            psm = data_dict.get('psm')
+            pre_processing_config = data_dict.get('preProcessingConfig')
 
+            data_to_store = {
+                'tempName': temp_name,
+                'psm': psm,
+                'preProcessingConfig': pre_processing_config,
+                'config': input_data
+            }
+
+            # Add data to Firestore
+            db.collection('template').document().set(data_to_store)
+
+            # Fetch updated data from Firestore to display
             query = db.collection('template').stream()
-
-            # Convert the documents to a list of dictionaries
             templates = [doc.to_dict() for doc in query]
 
             return render_template('document/templates.html', templates=templates)
 
-        # Retrieve the 'result' data from the form submission
-        result_json = request.form.get('result')
+    # Retrieve the 'result' data from the form submission
+    result_json = request.form.get('result')
 
-        # Replace single quotes with double quotes in the JSON string
-        result_json = result_json.replace("'", "\"")
+    try:
+        # Parse the JSON string to a Python object
+        result = json.loads(result_json)
+        print("Testing Result:", result)
+        # Do something with the 'result' data in the customTemplate route
+        # You can pass 'result' to the customTemplate.html template or process it as needed
+        return render_template('document/customTemplate.html', result=result)
+    except json.JSONDecodeError as e:
+        print("Error decoding JSON:", e)
 
-        try:
-            # Parse the JSON string to a Python object
-            result = json.loads(result_json)
-            print("Testing Result:", result)
-            # Do something with the 'result' data in the customTemplate route
-            # You can pass 'result' to the customTemplate.html template or process it as needed
-            return render_template('document/customTemplate.html', result=result)
-        except json.JSONDecodeError as e:
-            print("Error decoding JSON:", e)
-
-    # Handle GET request (if needed)
-    return render_template('document/customTemplate.html')
+        return render_template('document/customTemplate.html')
 
 @app.route("/document/trash", methods=['GET', 'POST'])
 def documentTrash():

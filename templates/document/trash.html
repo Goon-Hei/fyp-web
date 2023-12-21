@@ -67,7 +67,7 @@
                     </ul>
                 </nav><!-- .nav-menu -->
 
-                <div class="nav-container container">
+                <!-- <div class="nav-container container">
                     <div class="help-div">
                         <a><i class='help-button bx bx-question-mark'></i></a>
                     </div>
@@ -78,7 +78,7 @@
                         target="_blank">
                         <button id="documentation">Documentation</button>
                     </a>
-                </div>
+                </div> -->
 
                 <form action="{{ url_for('documentHome') }}" method="POST">
                     <input type="hidden" name="action" value="logout">
@@ -103,6 +103,7 @@
 
                     <div class="section-title">
                         <h2>Welcome back,</h2>
+                            <h5>Search File</h5>
                     </div>
                     <div class="d-flex">
                         <div class="input-group">
@@ -201,7 +202,7 @@
                                                 <input type="hidden"
                                                     name="imageToDelete"
                                                     value="{{ trash_data.link }}">
-                                                <button type="submit">Delete</button>
+                                                <button type="submit" id="deleteImage">Delete</button>
                                             </form>
                                             <form method="POST"
                                                 action="{{ url_for('documentTrash') }}">
@@ -211,7 +212,7 @@
                                                 <input type="hidden"
                                                     name="imageToRestore"
                                                     value="{{ trash_data.link }}">
-                                                <button type="submit">Restore</button>
+                                                <button type="submit" id="restoreImage">Restore</button>
                                             </form>
                                         </td>
                                     </tr>
