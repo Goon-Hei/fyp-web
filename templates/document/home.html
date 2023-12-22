@@ -67,7 +67,9 @@
           </div>
           <h6 class="help mt-3 text-white">Need help?</h6>
           <p class="text-white">Please check our docs</p>
-          <a href="https://receptive-dish-04e.notion.site/OCR-Documentation-5f3837d9a724496fb39f0d0e6508dbcc" target="_blank">
+          <a
+            href="https://receptive-dish-04e.notion.site/OCR-Documentation-5f3837d9a724496fb39f0d0e6508dbcc"
+            target="_blank">
             <button id="documentation">Documentation</button>
           </a>
         </div>
@@ -95,6 +97,10 @@
           <div class="section-title">
             <h2>Welcome back, {{ user_data.name }}</h2>
             <h5>Files</h5>
+            <div class="d-flex justify-content-between col-md-7">
+              <h5>Search File</h5>
+              <h5>Upload File</h5>
+            </div>
           </div>
           <div class="d-flex">
             <div class="input-group">
@@ -118,6 +124,8 @@
                 enctype="multipart/form-data">
                 <input type="hidden" name="action" value="uploadFile">
                 <div class="input-group mb-3">
+                  <label for="fileInput" class="input-group-prepend">
+                  </label>
                   <input type="file" class="form-control" id="fileInput"
                     name="file" accept=".jpeg, .jpg, .png">
                   <div class="input-group-append">
@@ -174,10 +182,11 @@
                     <td><a
                         href="{{ url_for('documentImageDetail', imageLink=image_data.link) }}"
                         title="More Details">
-                        <img src="{{ image_data.link }}" class="img-fluid vh-50" alt>
+                        <img src="{{ image_data.link }}" class="img-fluid vh-50"
+                          alt>
                       </a></td>
                     <td>{{ image_data.file_name }}</td>
-                    
+
                     <td>{{ image_data.date_created.strftime('%d/%m/%Y') }}</td>
                     <td>
                       <form method="POST"
@@ -185,7 +194,7 @@
                         <input type="hidden" name="imageToDelete"
                           value="{{ image_data.link }}">
                         <button type="submit" name="action"
-                          value="deleteImage"
+                          value="deleteImage" id="deleteImage"
                           onsubmit="return confirm('Are you sure to delete this image?')">Delete</button>
                       </form>
                     </td>

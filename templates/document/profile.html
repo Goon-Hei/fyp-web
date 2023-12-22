@@ -67,7 +67,7 @@
                     </ul>
                 </nav><!-- .nav-menu -->
 
-                <div class="nav-container container">
+                <!-- <div class="nav-container container">
                     <div class="help-div">
                         <a><i class='help-button bx bx-question-mark'></i></a>
                     </div>
@@ -78,7 +78,7 @@
                         target="_blank">
                         <button id="documentation">Documentation</button>
                     </a>
-                </div>
+                </div> -->
 
                 <form action="{{ url_for('documentHome') }}" method="POST">
                     <input type="hidden" name="action" value="logout">
@@ -119,12 +119,12 @@
                             <p class="mb-0">{{ user_data.email }}</p>
                         </div>
 
-                        <div class="col-sm-3 mt-3">
+                        <!-- <div class="col-sm-3 mt-3">
                             <p class="text-muted mb-0">Password</p>
                         </div>
                         <div class="col-sm-9">
                             <p class="mb-0">{{ user_data.password }}</p>
-                        </div>
+                        </div> -->
                     </div>
                     <div class="row">
                         <div class="d-flex justify-content-start mb-2 mt-3">
@@ -132,7 +132,7 @@
                                 class="btn btn-outline-primary"
                                 style="float: right;"
                                 data-bs-toggle="modal"
-                                data-bs-target="#editInfoModal">Edit Info</button>
+                                data-bs-target="#editInfoModal">Update Profile</button>
                         </div>
                     </div>
 
@@ -182,7 +182,7 @@
                     enctype="multipart/form-data">
                     <input type="hidden" name="action" value="editUser">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Edit Info</h5>
+                        <h5 class="modal-title" id="exampleModalLabel">Update Profile</h5>
                         <button type="button" class="btn-close"
                             data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -200,21 +200,13 @@
                                 <input type="text" class="form-control"
                                     placeholder="e.g. 4.0000" id="email"
                                     name="email"
-                                    value="{{ user_data.email }}" required>
-                            </div>
-                            <br />
-                            <div class="form-group">
-                                <label for="password">Password</label>
-                                <input type="password" class="form-control"
-                                    placeholder="Enter new password"
-                                    id="password" name="password">
+                                    value="{{ user_data.email }}" readonly>
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary"
-                            data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Save</button>
+
+                        <button type="submit" class="btn btn-primary">Update</button>
                     </div>
                 </form>
             </div>

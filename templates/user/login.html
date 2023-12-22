@@ -52,6 +52,7 @@
         <i class="bi bi-eye-slash" id="togglePassword"></i>
 
         <button type="submit" id="loginButton">Log In</button>
+        <span>Forgot your password? <a href="{{ url_for('reset_password_request') }}">Reset Password</a></span>
         <span>Don't have an account? <a href="{{ url_for('userRegister') }}">Register</a></span>
     </form>
     </div>

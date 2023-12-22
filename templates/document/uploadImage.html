@@ -91,6 +91,13 @@
 
     <main id="main">
 
+      {% if image_data %}
+      <section id="portfolio" class="portfolio section-bg">
+        <div class="container">
+          <p>{{ image }}</p>
+        </div>
+      </section><!-- End Portfolio Section -->
+      {% else %}
       <section id="portfolio" class="portfolio section-bg">
         <div class="container">
           <div class="input-group">
@@ -109,6 +116,97 @@
           </div>
         </div>
       </section><!-- End Portfolio Section -->
+      {% endif %}
+      {% if image_data %}
+      <div class="mt-3"><!-- This div will hold the API response and will be displayed above the button -->
+        <form method="POST" action="{{ url_for('uploadImage') }}">
+          <input type="hidden" name="imageUrl"
+            value="{{ image_data }}">
+          <input type="hidden" name="action" value="confirm">
+          <div class="form-group">
+            <label for="psm">Psm</label>
+            <input type="number" class="form-control"
+              placeholder="Enter a number between 0 and 13" id="psm" name="psm"
+              value="11" min="0" max="13">
+          </div>
+          <div class="form-group">
+            <label for="dilated_iterations">Dilated Iterations</label>
+            <input type="number" class="form-control"
+              placeholder="Enter a number between 1 and 10"
+              id="dilated_iterations"
+              name="dilated_iterations" value="1" min="1" max="10">
+          </div>
+          <div class="form-group">
+            <label for="eroded_iterations">Eroded Iterations</label>
+            <input type="number" class="form-control"
+              placeholder="Enter a number between 1 and 10"
+              id="eroded_iterations"
+              name="eroded_iterations" value="1" min="1" max="10" step="1">
+          </div>
+          <div class="form-group">
+            <label for="threshold">Threshold</label>
+            <select class="form-control" id="threshold" name="threshold">
+              <option value="True">True</option>
+              <option value="False" selected>False</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="kernelSize">Kernel Size</label>
+            <select class="form-control" id="kernelSize" name="kernelSize">
+              <option value="1" selected>1</option>
+              <option value="3">3</option>
+              <option value="5">5</option>
+              <option value="7">7</option>
+              <option value="9">9</option>
+              <option value="11">11</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="equalizeHist">Equalize Hist</label>
+            <select class="form-control" id="equalizeHist" name="equalizeHist">
+              <option value="True">True</option>
+              <option value="False" selected>False</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="morphologyEx_iterations">MorphologyEx Iterations</label>
+            <input type="number" class="form-control"
+              placeholder="Enter a number between 1 and 10"
+              id="morphologyEx_iterations"
+              name="morphologyEx_iterations" value="1" min="1" max="10" step="1">
+          </div>
+          <div class="form-group">
+            <label for="dilated">Dilated</label>
+            <select class="form-control" id="dilated" name="dilated">
+              <option value="True">True</option>
+              <option value="False" selected>False</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="morphologyEx">MorphologyEx</label>
+            <select class="form-control" id="morphologyEx" name="morphologyEx">
+              <option value="True">True</option>
+              <option value="False" selected>False</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="eroded">Eroded</label>
+            <select class="form-control" id="eroded" name="eroded">
+              <option value="True">True</option>
+              <option value="False" selected>False</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="denoised">Denoised</label>
+            <select class="form-control" id="denoised" name="denoised">
+              <option value="True">True</option>
+              <option value="False" selected>False</option>
+            </select>
+          </div>
+          <button type="submit" id="confirm-button">confirm</button>
+        </form>
+      </div>
+      {% endif %}
 
     </main><!-- End #main -->
 

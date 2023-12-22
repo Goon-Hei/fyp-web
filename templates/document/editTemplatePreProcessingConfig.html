@@ -1,0 +1,281 @@
+<!-- Homepage -->
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+        <title>FYP - OCR</title>
+        <meta content name="description">
+        <meta content name="keywords">
+
+        <!-- Favicons -->
+        <link href="{{ url_for('static', filename='img/favicon.png') }}"
+            rel="icon">
+
+        <!-- Google Fonts -->
+        <link
+            href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
+            rel="stylesheet">
+
+        <!-- Vendor CSS Files -->
+        <link
+            href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}"
+            rel="stylesheet">
+        <link
+            href="{{ url_for('static', filename='vendor/bootstrap-icons/bootstrap-icons.css') }}"
+            rel="stylesheet">
+        <link
+            href="{{ url_for('static', filename='vendor/boxicons/css/boxicons.min.css') }}"
+            rel="stylesheet">
+        <link
+            href="{{ url_for('static', filename='vendor/glightbox/css/glightbox.min.css') }}"
+            rel="stylesheet">
+        <link
+            href="{{ url_for('static', filename='vendor/swiper/swiper-bundle.min.css') }}"
+            rel="stylesheet">
+
+        <!-- Template Main CSS File -->
+        <link href="{{ url_for('static', filename='css/document.css') }}"
+            rel="stylesheet">
+    </head>
+
+    <body>
+
+        <!-- ======= Header ======= -->
+        <header id="header">
+            <div class="d-flex flex-column">
+
+                <nav id="navbar" class="nav-menu navbar">
+                    <ul>
+                        <li><a href="{{ url_for('documentHome') }}"
+                                class="nav-link scrollto active"><i
+                                    class="bx bx-home"></i>
+                                <span>Home</span></a></li>
+                        <li><a href="{{ url_for('documentTemplates') }}"
+                                class="nav-link scrollto"><i
+                                    class="bx bx-book-content"></i>
+                                <span>Templates</span></a></li>
+                        <li><a href="{{ url_for('documentProfile') }}"
+                                class="nav-link scrollto"><i class="bx bx-user"></i>
+                                <span>Profile</span></a></li>
+                        <li><a href="{{ url_for('documentTrash') }}"
+                                class="nav-link scrollto"><i class="bx bx-trash"></i>
+                                <span>Trash</span></a></li>
+                    </ul>
+                </nav><!-- .nav-menu -->
+
+                <div class="nav-container container">
+                    <div class="help-div">
+                        <a><i class='help-button bx bx-question-mark'></i></a>
+                    </div>
+                    <h6 class="help mt-3 text-white">Need help?</h6>
+                    <p class="text-white">Please check our docs</p>
+                    <a
+                        href="https://receptive-dish-04e.notion.site/OCR-Documentation-5f3837d9a724496fb39f0d0e6508dbcc"
+                        target="_blank">
+                        <button id="documentation">Documentation</button>
+                    </a>
+                </div>
+
+                <form action="{{ url_for('documentHome') }}" method="POST">
+                    <input type="hidden" name="action" value="logout">
+                    <button id="logout" type="submit" class="logout-button">Sign
+                        Out</button>
+                </form>
+
+            </div>
+        </header><!-- End Header -->
+
+        <!-- ======= Hero Section ======= -->
+        <!-- <section id="hero" class="d-flex flex-column justify-content-center align-items-center">
+    <div class="container text-center text-md-left" data-aos="fade-up">
+      
+    </div>
+  </section>End Hero -->
+
+        <main id="main">
+            <div class="mt-3"><!-- This div will hold the API response and will be displayed above the button -->
+                {% for template in templates %}
+                <form method="POST"
+                    action="{{ url_for('documentEditTemplatePreProcessingConfig') }}">
+                    <input type="hidden" name="tempName"
+                        value="{{ temp_name }}">
+                    <input type="hidden" name="templates"
+                        value="{{ templates }}">
+                    <input type="hidden" name="action"
+                        value="editTemplatePreProcessingConfig">
+                    <div class="form-group">
+                        <label for="psm">Psm</label>
+                        <input type="number" class="form-control"
+                            placeholder="Enter a number between 0 and 13"
+                            id="psm" name="psm"
+                            value="{{ template['psm'] }}" min="0" max="13">
+                    </div>
+                    <div class="form-group">
+                        <label for="dilated_iterations">Dilated Iterations</label>
+                        <input type="number" class="form-control"
+                            placeholder="Enter a number between 1 and 10"
+                            id="dilated_iterations"
+                            name="dilated_iterations"
+                            value="{{ template['preProcessingConfig']['dilated_iterations'] }}"
+                            min="1" max="10">
+                    </div>
+                    <div class="form-group">
+                        <label for="eroded_iterations">Eroded Iterations</label>
+                        <input type="number" class="form-control"
+                            placeholder="Enter a number between 1 and 10"
+                            id="eroded_iterations"
+                            name="eroded_iterations"
+                            value="{{ template['preProcessingConfig']['eroded_iterations'] }}"
+                            min="1" max="10" step="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="threshold">Threshold</label>
+                        <select class="form-control" id="threshold"
+                            name="threshold">
+                            <option value="True" {% if
+                                template['preProcessingConfig']['threshold']
+                                %}selected{% endif %}>True</option>
+                            <option value="False" {% if not
+                                template['preProcessingConfig']['threshold']
+                                %}selected{% endif %}>False</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="kernelSize">Kernel Size</label>
+                        <select class="form-control" id="kernelSize"
+                            name="kernelSize">
+                            <option value="1" {% if
+                                template['preProcessingConfig']['kernelSize'] ==
+                                1 %}selected{% endif %}>1</option>
+                            <option value="3" {% if
+                                template['preProcessingConfig']['kernelSize'] ==
+                                3 %}selected{% endif %}>3</option>
+                            <option value="5" {% if
+                                template['preProcessingConfig']['kernelSize'] ==
+                                5 %}selected{% endif %}>5</option>
+                            <option value="7" {% if
+                                template['preProcessingConfig']['kernelSize'] ==
+                                7 %}selected{% endif %}>7</option>
+                            <option value="9" {% if
+                                template['preProcessingConfig']['kernelSize'] ==
+                                9 %}selected{% endif %}>9</option>
+                            <option value="11" {% if
+                                template['preProcessingConfig']['kernelSize'] ==
+                                11 %}selected{% endif %}>11</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="equalizeHist">Equalize Hist</label>
+                        <select class="form-control" id="equalizeHist"
+                            name="equalizeHist">
+                            <option value="True" {% if
+                                template['preProcessingConfig']['equalizeHist']
+                                %}selected{% endif %}>True</option>
+                            <option value="False" {% if not
+                                template['preProcessingConfig']['equalizeHist']
+                                %}selected{% endif %}>False</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="morphologyEx_iterations">MorphologyEx
+                            Iterations</label>
+                        <input type="number" class="form-control"
+                            placeholder="Enter a number between 1 and 10"
+                            id="morphologyEx_iterations"
+                            name="morphologyEx_iterations"
+                            value="{{ template['preProcessingConfig']['morphologyEx_iterations'] }}"
+                            min="1"
+                            max="10"
+                            step="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="dilated">Dilated</label>
+                        <select class="form-control" id="dilated" name="dilated">
+                            <option value="True" {% if
+                                template['preProcessingConfig']['dilated']
+                                %}selected{% endif %}>True</option>
+                            <option value="False" {% if not
+                                template['preProcessingConfig']['dilated']
+                                %}selected{% endif %}>False</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="morphologyEx">MorphologyEx</label>
+                        <select class="form-control" id="morphologyEx"
+                            name="morphologyEx">
+                            <option value="True" {% if
+                                template['preProcessingConfig']['morphologyEx']
+                                %}selected{% endif %}>True</option>
+                            <option value="False" {% if not
+                                template['preProcessingConfig']['morphologyEx']
+                                %}selected{% endif %}>False</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="eroded">Eroded</label>
+                        <select class="form-control" id="eroded" name="eroded">
+                            <option value="True" {% if
+                                template['preProcessingConfig']['eroded']
+                                %}selected{% endif %}>True</option>
+                            <option value="False" {% if not
+                                template['preProcessingConfig']['eroded']
+                                %}selected{% endif %}>False</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="denoised">Denoised</label>
+                        <select class="form-control" id="denoised"
+                            name="denoised">
+                            <option value="True" {% if
+                                template['preProcessingConfig']['denoised']
+                                %}selected{% endif %}>True</option>
+                            <option value="False" {% if not
+                                template['preProcessingConfig']['denoised']
+                                %}selected{% endif %}>False</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" id="confirm-button">confirm</button>
+                </form>
+                {% endfor %}
+            </div>
+
+        </main><!-- End #main -->
+
+        <!-- ======= Footer ======= -->
+        <footer id="footer">
+            <div class="container d-md-flex py-4">
+                <div class="copyright">
+                    &copy; 2023 - OCR System
+                </div>
+            </div>
+        </footer><!-- End Footer -->
+
+        <a href="#"
+            class="back-to-top d-flex align-items-center justify-content-center"><i
+                class="bi bi-arrow-up-short"></i></a>
+
+        <!-- Vendor JS Files -->
+        <script
+            src="{{ url_for('static', filename='vendor/purecounter/purecounter_vanilla.js') }}"></script>
+        <script
+            src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+        <script
+            src="{{ url_for('static', filename='vendor/glightbox/js/glightbox.min.js') }}"></script>
+        <script
+            src="{{ url_for('static', filename='vendor/isotope-layout/isotope.pkgd.min.js') }}"></script>
+        <script
+            src="{{ url_for('static', filename='vendor/swiper/swiper-bundle.min.js') }}"></script>
+        <script
+            src="{{ url_for('static', filename='vendor/waypoints/noframework.waypoints.js') }}"></script>
+        <script
+            src="{{ url_for('static', filename='vendor/php-email-form/validate.js') }}"></script>
+
+        <!-- Template Main JS File -->
+        <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+    </body>
+</html>
