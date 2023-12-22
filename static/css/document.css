@@ -1467,10 +1467,24 @@ button#deleteImage {
   border-color: #fff !important;
 }
 
-button#restoreImage {
+button#restoreImage{
   margin-top: 10px;
   margin-bottom: 10px;
   width: 100%;
+  background-color: #fff;
+  color: #000;
+  padding: 15px 0;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  border-color: #fff !important;
+}
+
+button#editTemplate,#deleteTemplate {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  width: 20%;
   background-color: #fff;
   color: #000;
   padding: 15px 0;
@@ -1485,7 +1499,21 @@ button#confirm-button {
   margin-top: 10px;
   margin-bottom: 10px;
   width: 30%;
-  background-color: #fff;
+  background-color: #ffffff;
+  color: #000;
+  padding: 15px 0;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  border-color: #fff !important;
+}
+
+button#addInputButton {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  width: 30%;
+  background-color: #ffffff;
   color: #000;
   padding: 15px 0;
   font-size: 13px;
