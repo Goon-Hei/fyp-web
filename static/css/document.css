@@ -1481,6 +1481,23 @@ button#restoreImage{
   border-color: #fff !important;
 }
 
+.custom-container {
+  max-height: 700px;
+  /* Set the maximum height as per your requirement */
+  overflow-y: auto;
+  margin-left: 260px;
+  width: 50%;
+}
+
+.custom-wrapper {
+  width: auto;
+}
+
+.custom-table {
+  width: auto;
+  margin-bottom: 0;
+}
+
 button#editTemplate,#deleteTemplate {
   margin-top: 10px;
   margin-bottom: 10px;

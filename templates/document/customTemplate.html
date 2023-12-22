@@ -37,7 +37,7 @@
             rel="stylesheet">
 
         <!-- Template Main CSS File -->
-        <link href="{{ url_for('static', filename='css/custom.css') }}"
+        <link href="{{ url_for('static', filename='css/document.css') }}"
             rel="stylesheet">
     </head>
 
@@ -134,7 +134,7 @@
                     </table>
                 </div>
             </div>
-            <div><!-- This div will hold the API response and will be displayed above the button -->
+            <div class="me-5 w-25"><!-- This div will hold the API response and will be displayed above the button -->
                 <form method="POST" action="{{ url_for('customTemplate') }}">
                     <input type="hidden" name="config" value="{{ passData }}">
                     <input type="hidden" name="result"
@@ -168,7 +168,7 @@
                                 placeholder="Enter a value" name="value[]">
                         </div>
                     </div>
-                    <div class="d-flex">
+                    <div class="buttons-container">
                     <button type="button" id="addInputButton"
                         onclick="addInputFields()">Add Input</button>
                     <button type="submit" id="confirm-button">Confirm</button>

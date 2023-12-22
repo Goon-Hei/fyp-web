@@ -789,10 +789,11 @@ def uploadImage():
                 else:
                 
                     image_data = uploaded_file.read()
+                    print("testingFile733", image_data)
 
                     encoded_string = base64.b64encode(image_data).decode('utf-8')
                     
-                    return render_template('document/uploadImage.html', image_data=encoded_string)
+                    return render_template('document/uploadImage.html', image_data=encoded_string,image=uploaded_file.filename)
 
         elif request.form.get('action') == 'confirm':
 
