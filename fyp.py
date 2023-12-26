@@ -599,12 +599,15 @@ def documentTemplates():
 
             query_ref = db.collection("template").where('tempName' , "==", temp_name)
             docs = query_ref.stream()
-            templates = []
-            for doc in docs:
-                templates.append(doc.to_dict())
-            print("testingTemplatesss",templates)
+            if docs:
+                # Retrieve data from the first (and only) document
+                template_data = next(docs).to_dict()
 
-            return render_template('document/editTemplatePreProcessingConfig.html', temp_name=temp_name, templates=templates)
+                print("testingTemplatesss", template_data)
+                template = json.dumps(template_data, ensure_ascii=False)
+                print("testin23esss", template)
+
+            return render_template('document/editTemplatePreProcessingConfig.html', temp_name=temp_name, template_data=template_data,template=template)
 
 
         elif request.form['action'] == 'searchTemplate':
@@ -662,16 +665,16 @@ def documentEditTemplatePreProcessingConfig():
         if request.form['action'] == 'editTemplatePreProcessingConfig':
             # Assuming you have a template ID available in the form
             temp_name = request.form.get('tempName')
-            templates_json = request.form.get('templates')
-            print("5126161", templates_json)
+            template_data = request.form.get('template')
+            print("templates_json:", template_data)
 
-            # Replace single quotes with double quotes
-            templates = templates_json.replace("'", '"')
-            print("25122561251251", templates_json)
+            template = json.loads(template_data)
 
-            # templates = json.loads(templates_json)
+            print("testingTemplateEdit", template)
 
-            # print("testingTemplateEdit", templates)
+            psm_value = template["psm"]
+
+            print("psm_value:", psm_value)
 
             # config_data = templates[0]['config']
             # print("616136116713", config_data)
@@ -706,7 +709,7 @@ def documentEditTemplatePreProcessingConfig():
             
             passData = json.dumps(passingData, ensure_ascii=False)
 
-            return render_template('document/editTemplateConfig.html', temp_name=temp_name, passData=passData,templates=templates)
+            return render_template('document/editTemplateConfig.html', temp_name=temp_name, passData=passData,template=template)
 
 
     return render_template('document/templates.html')
@@ -843,6 +846,7 @@ def uploadImage():
                         "denoised": denoised
                     }
                 }
+                print("passingData", passingData)
 
                 # Convert the dictionary to a JSON string with double quotes
                 passData = json.dumps(passingData, ensure_ascii=False)

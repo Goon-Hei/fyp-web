@@ -97,13 +97,12 @@
 
         <main id="main">
             <div class="mt-3"><!-- This div will hold the API response and will be displayed above the button -->
-                {% for template in templates %}
                 <form method="POST"
                     action="{{ url_for('documentEditTemplatePreProcessingConfig') }}">
                     <input type="hidden" name="tempName"
                         value="{{ temp_name }}">
-                    <input type="hidden" name="templates"
-                        value="{{ templates }}">
+                    <input type="hidden" name="template"
+                        value="{{ template }}">
                     <input type="hidden" name="action"
                         value="editTemplatePreProcessingConfig">
                     <div class="form-group">
@@ -111,7 +110,7 @@
                         <input type="number" class="form-control"
                             placeholder="Enter a number between 0 and 13"
                             id="psm" name="psm"
-                            value="{{ template['psm'] }}" min="0" max="13">
+                            value="{{ template_data['psm'] }}" min="0" max="13">
                     </div>
                     <div class="form-group">
                         <label for="dilated_iterations">Dilated Iterations</label>
@@ -119,7 +118,7 @@
                             placeholder="Enter a number between 1 and 10"
                             id="dilated_iterations"
                             name="dilated_iterations"
-                            value="{{ template['preProcessingConfig']['dilated_iterations'] }}"
+                            value="{{ template_data['preProcessingConfig']['dilated_iterations'] }}"
                             min="1" max="10">
                     </div>
                     <div class="form-group">
@@ -128,7 +127,7 @@
                             placeholder="Enter a number between 1 and 10"
                             id="eroded_iterations"
                             name="eroded_iterations"
-                            value="{{ template['preProcessingConfig']['eroded_iterations'] }}"
+                            value="{{ template_data['preProcessingConfig']['eroded_iterations'] }}"
                             min="1" max="10" step="1">
                     </div>
                     <div class="form-group">
@@ -136,10 +135,10 @@
                         <select class="form-control" id="threshold"
                             name="threshold">
                             <option value="True" {% if
-                                template['preProcessingConfig']['threshold']
+                                template_data['preProcessingConfig']['threshold']
                                 %}selected{% endif %}>True</option>
                             <option value="False" {% if not
-                                template['preProcessingConfig']['threshold']
+                                template_data['preProcessingConfig']['threshold']
                                 %}selected{% endif %}>False</option>
                         </select>
                     </div>
@@ -148,22 +147,22 @@
                         <select class="form-control" id="kernelSize"
                             name="kernelSize">
                             <option value="1" {% if
-                                template['preProcessingConfig']['kernelSize'] ==
+                                template_data['preProcessingConfig']['kernelSize'] ==
                                 1 %}selected{% endif %}>1</option>
                             <option value="3" {% if
-                                template['preProcessingConfig']['kernelSize'] ==
+                                template_data['preProcessingConfig']['kernelSize'] ==
                                 3 %}selected{% endif %}>3</option>
                             <option value="5" {% if
-                                template['preProcessingConfig']['kernelSize'] ==
+                                template_data['preProcessingConfig']['kernelSize'] ==
                                 5 %}selected{% endif %}>5</option>
                             <option value="7" {% if
-                                template['preProcessingConfig']['kernelSize'] ==
+                                template_data['preProcessingConfig']['kernelSize'] ==
                                 7 %}selected{% endif %}>7</option>
                             <option value="9" {% if
-                                template['preProcessingConfig']['kernelSize'] ==
+                                template_data['preProcessingConfig']['kernelSize'] ==
                                 9 %}selected{% endif %}>9</option>
                             <option value="11" {% if
-                                template['preProcessingConfig']['kernelSize'] ==
+                                template_data['preProcessingConfig']['kernelSize'] ==
                                 11 %}selected{% endif %}>11</option>
                         </select>
                     </div>
@@ -172,10 +171,10 @@
                         <select class="form-control" id="equalizeHist"
                             name="equalizeHist">
                             <option value="True" {% if
-                                template['preProcessingConfig']['equalizeHist']
+                                template_data['preProcessingConfig']['equalizeHist']
                                 %}selected{% endif %}>True</option>
                             <option value="False" {% if not
-                                template['preProcessingConfig']['equalizeHist']
+                                template_data['preProcessingConfig']['equalizeHist']
                                 %}selected{% endif %}>False</option>
                         </select>
                     </div>
@@ -186,7 +185,7 @@
                             placeholder="Enter a number between 1 and 10"
                             id="morphologyEx_iterations"
                             name="morphologyEx_iterations"
-                            value="{{ template['preProcessingConfig']['morphologyEx_iterations'] }}"
+                            value="{{ template_data['preProcessingConfig']['morphologyEx_iterations'] }}"
                             min="1"
                             max="10"
                             step="1">
@@ -195,10 +194,10 @@
                         <label for="dilated">Dilated</label>
                         <select class="form-control" id="dilated" name="dilated">
                             <option value="True" {% if
-                                template['preProcessingConfig']['dilated']
+                                template_data['preProcessingConfig']['dilated']
                                 %}selected{% endif %}>True</option>
                             <option value="False" {% if not
-                                template['preProcessingConfig']['dilated']
+                                template_data['preProcessingConfig']['dilated']
                                 %}selected{% endif %}>False</option>
                         </select>
                     </div>
@@ -207,10 +206,10 @@
                         <select class="form-control" id="morphologyEx"
                             name="morphologyEx">
                             <option value="True" {% if
-                                template['preProcessingConfig']['morphologyEx']
+                                template_data['preProcessingConfig']['morphologyEx']
                                 %}selected{% endif %}>True</option>
                             <option value="False" {% if not
-                                template['preProcessingConfig']['morphologyEx']
+                                template_data['preProcessingConfig']['morphologyEx']
                                 %}selected{% endif %}>False</option>
                         </select>
                     </div>
@@ -218,10 +217,10 @@
                         <label for="eroded">Eroded</label>
                         <select class="form-control" id="eroded" name="eroded">
                             <option value="True" {% if
-                                template['preProcessingConfig']['eroded']
+                                template_data['preProcessingConfig']['eroded']
                                 %}selected{% endif %}>True</option>
                             <option value="False" {% if not
-                                template['preProcessingConfig']['eroded']
+                                template_data['preProcessingConfig']['eroded']
                                 %}selected{% endif %}>False</option>
                         </select>
                     </div>
@@ -230,17 +229,16 @@
                         <select class="form-control" id="denoised"
                             name="denoised">
                             <option value="True" {% if
-                                template['preProcessingConfig']['denoised']
+                                template_data['preProcessingConfig']['denoised']
                                 %}selected{% endif %}>True</option>
                             <option value="False" {% if not
-                                template['preProcessingConfig']['denoised']
+                                template_data['preProcessingConfig']['denoised']
                                 %}selected{% endif %}>False</option>
                         </select>
                     </div>
 
                     <button type="submit" id="confirm-button">confirm</button>
                 </form>
-                {% endfor %}
             </div>
 
         </main><!-- End #main -->
