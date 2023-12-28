@@ -41,6 +41,11 @@
   </head>
 
   <body>
+    {% if error_message %}
+    <script>
+        alert("{{ error_message }}");
+    </script>
+    {% endif %}
 
     <!-- ======= Header ======= -->
     <header id="header">
@@ -55,9 +60,11 @@
                 class="nav-link scrollto"><i class="bx bx-book-content"></i>
                 <span>Templates</span></a></li>
             <li><a href="{{ url_for('documentProfile') }}"
-                class="nav-link scrollto"><i class="bx bx-user"></i> <span>Profile</span></a></li>
+                class="nav-link scrollto"><i class="bx bx-user"></i>
+                <span>Profile</span></a></li>
             <li><a href="{{ url_for('documentTrash') }}"
-                class="nav-link scrollto"><i class="bx bx-trash"></i> <span>Trash</span></a></li>
+                class="nav-link scrollto"><i class="bx bx-trash"></i>
+                <span>Trash</span></a></li>
           </ul>
         </nav><!-- .nav-menu -->
 
@@ -76,7 +83,8 @@
 
         <form action="{{ url_for('documentHome') }}" method="POST">
           <input type="hidden" name="action" value="logout">
-          <button id="logout" type="submit" class="logout-button">Sign Out</button>
+          <button id="logout" type="submit" class="logout-button">Sign
+            Out</button>
         </form>
 
       </div>
@@ -200,6 +208,10 @@
                     </td>
                   </tr>
                   {% endfor %}
+                  {% else %}
+                  <tr>
+                    <td colspan="4">No files exist</td>
+                  </tr>
                   {% endif %}
                 </tbody>
               </table>

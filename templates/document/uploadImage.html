@@ -42,6 +42,12 @@
 
   <body>
 
+    {% if error_message %}
+    <script>
+        alert("{{ error_message }}");
+    </script>
+    {% endif %}
+
     <!-- ======= Header ======= -->
     <header id="header">
       <div class="d-flex flex-column">
@@ -49,10 +55,10 @@
         <nav id="navbar" class="nav-menu navbar">
           <ul>
             <li><a href="{{ url_for('documentHome') }}"
-                class="nav-link scrollto active"><i class="bx bx-home"></i>
+                class="nav-link scrollto"><i class="bx bx-home"></i>
                 <span>Home</span></a></li>
             <li><a href="{{ url_for('documentTemplates') }}"
-                class="nav-link scrollto"><i class="bx bx-book-content"></i>
+                class="nav-link scrollto active"><i class="bx bx-book-content"></i>
                 <span>Templates</span></a></li>
             <li><a href="{{ url_for('documentProfile') }}"
                 class="nav-link scrollto"><i class="bx bx-user"></i> <span>Profile</span></a></li>

@@ -109,27 +109,24 @@ def userLogin():
 @app.route("/user/resetPasswordRequest", methods=['GET', 'POST'])
 def reset_password_request():
     if request.method == 'POST':
+        
         email = request.form['email']
 
         users_ref = db.collection('users')
-        query = users_ref.where('email', '==', email).limit(1)
-        user_docs = query.stream()
+        query = users_ref.where('email', '==', email)
+        documents = query.get()
+    
 
-        # Check if a user with the specified email exists
-        for user_doc in user_docs:
-            user_ref = user_doc.reference
-            
-            # Perform any other necessary operations with the user_ref
+        if documents:
+            for document in documents:
+                # User with the specified email exists
+                user_doc = document.reference
 
-            return render_template('user/resetPassword.html', email=email)
+                return render_template('user/resetPassword.html', email=email)
+        else:
+            error_message = 'No such email. Please enter a valid email'
 
-        # If user with the specified email is not found, you can handle it accordingly
-        if not user_docs:
-            # Handle the case where no user with the specified email was found
-            # You can render an error message or redirect to another page
-            error_message = 'No such email'
-
-            return render_template('user/resetPasswordRequest.html', error_message=error_message)
+        return render_template('user/resetPasswordRequest.html', error_message=error_message)
     
     return render_template('user/resetPasswordRequest.html')
 
@@ -143,7 +140,7 @@ def reset_password():
     if request.method == 'POST':
         password = request.form.get('password')
         email = request.form.get('email')
-
+        
 
         if email:
             # Query Firestore to find the user with the specified email
@@ -154,6 +151,12 @@ def reset_password():
             # Check if a user with the specified email exists
             for user_doc in user_docs:
                 user_ref = user_doc.reference
+
+                # Validate password length
+                if len(password) < 6:
+                    
+                    error_message = 'Password must be at least 6 characters long.'
+                    return render_template('user/resetPassword.html', error_message=error_message,email=email)
 
                 # Update the password in Firestore
                 user_ref.update({'password': hashPassword(password)})
@@ -182,37 +185,38 @@ def userRegister():
         hashed_password = hashPassword(password)
 
         user_data = {"name": name, "email": email, "password": hashed_password}
-        # image_data = {"link": "", "userID": "", "dateCreated": "", "fileName": ""}
-        # template_data = {"tempName": "", "config": ""}
 
-        # Create user in Firebase Authentication
-        user = auth.create_user(
-            email=email,
-            password=password,
-            display_name=name
-        )
+        try:
+            # Try to create the user in Firebase Authentication
+            user = auth.create_user(
+                email=email,
+                password=password,
+                display_name=name
+            )
 
-        # Use the Firebase Authentication UID as the unique identifier
-        user_id = user.uid
+            # Use the Firebase Authentication UID as the unique identifier
+            user_id = user.uid
 
-        # Add user data to 'users' collection with the Firebase UID
-        new_user_ref = db.collection('users').document(user_id)
-        new_user_ref.set(user_data)
+            # Add user data to 'users' collection with the Firebase UID
+            new_user_ref = db.collection('users').document(user_id)
+            new_user_ref.set(user_data)
 
-        # # Update image_data and template_data with the correct user ID
-        # image_data["userID"] = user_id
-        # template_data["userID"] = user_id
+            session['userEmail'] = email
+            session['userID'] = user_id
 
-        # # Add image data to 'images' collection
-        # new_image_ref = db.collection('images').add(image_data)
+            return redirect(url_for('userLogin'))
 
-        # # Add template data to 'template' collection
-        # new_template_ref = db.collection('template').add(template_data)
+        except auth.EmailAlreadyExistsError as e:
+            # Handle the case where the email already exists
 
-        session['userEmail'] = email
-        session['userID'] = user_id
+            error_message = f'Registration failed. Email already exists'
 
-        return redirect(url_for('userLogin'))
+            return render_template('user/register.html', error_message=error_message)
+        
+        except ValueError as e:
+            # Handle the case where the password is invalid
+            error_message = 'Registration failed. Invalid password. Password must be at least 6 characters long.'
+            return render_template('user/register.html', error_message=error_message)
 
     return render_template('user/register.html')
 
@@ -287,6 +291,11 @@ def documentHome():
                     images_ref.add({'link': new_link, 'fileName': filename, 'dateCreated': datetime.utcnow(), 'userID': user_id})
 
                     return redirect(url_for('documentHome'))
+                
+            else:
+                error_message=('Only JPG, JPEG, and PNG files are allowed.')
+
+                return render_template('document/home.html', error_message=error_message, user_data=user_data)
 
 
         elif action == 'searchFiles':
@@ -722,8 +731,10 @@ def documentEditTemplateConfig():
     
     if request.method == 'POST':
         if request.form['action'] == 'editTemplatePreProcessingConfig':
-
+            
+            old_tempName = request.form.get('old_tempName')
             temp_name = request.form.get('tempName')
+            print("testinng122333",temp_name)
             field_names = request.form.getlist('fieldName[]')
             extract_methods = request.form.getlist('extract_method[]')
             values = request.form.getlist('value[]')
@@ -741,9 +752,10 @@ def documentEditTemplateConfig():
                 'preProcessingConfig': pre_processing_config,
                 'config': input_data
             }
+            print("teassgasaga",data_to_update)
 
             # Query Firestore to find the document to update
-            query = db.collection('template').where('tempName', '==', temp_name).stream()
+            query = db.collection('template').where('tempName', '==', old_tempName).stream()
 
             # Assuming there's only one document with the specified temp_name
             for doc in query:
@@ -797,6 +809,10 @@ def uploadImage():
                     encoded_string = base64.b64encode(image_data).decode('utf-8')
                     
                     return render_template('document/uploadImage.html', image_data=encoded_string,image=uploaded_file.filename)
+            else:
+                error_message=('Only JPG, JPEG, and PNG files are allowed.')
+
+                return render_template('document/uploadImage.html', error_message=error_message, image=uploaded_file.filename)
 
         elif request.form.get('action') == 'confirm':
 
@@ -880,6 +896,7 @@ def templateDetail():
             passData = request.form.get('passData')
             pass_result_str = request.form.get('result')
             pass_result_str = pass_result_str.replace("'", "\"")
+            print("pass_result_str:", pass_result_str)
             
             # Parse the JSON string into a Python list
             pass_result = json.loads(pass_result_str)

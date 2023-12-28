@@ -58,7 +58,8 @@
                                     class="bx bx-book-content"></i>
                                 <span>Templates</span></a></li>
                         <li><a href="{{ url_for('documentProfile') }}"
-                                class="nav-link scrollto"><i class="bx bx-user"></i>
+                                class="nav-link scrollto"><i
+                                    class="bx bx-user"></i>
                                 <span>Profile</span></a></li>
                         <li><a href="{{ url_for('documentTrash') }}"
                                 class="nav-link scrollto active"><i
@@ -102,8 +103,8 @@
                 <div class="container">
 
                     <div class="section-title">
-                        <h2>Welcome back,</h2>
-                            <h5>Search File</h5>
+                        <h2>Trash</h2>
+                        <h5>Search File</h5>
                     </div>
                     <div class="d-flex">
                         <div class="input-group">
@@ -180,6 +181,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    {% if trash_data_list %}
                                     {% for trash_data in trash_data_list %}
                                     <tr>
                                         <td>
@@ -187,10 +189,12 @@
                                                 class="img-fluid" alt>
                                         </td>
                                         <td>{{ trash_data.file_name }}</td>
-                                        <td>{{ trash_data.date_deleted.strftime('%d/%m/%Y')
+                                        <td>{{
+                                            trash_data.date_deleted.strftime('%d/%m/%Y')
                                             if trash_data.date_deleted != 'N/A'
                                             else 'N/A' }}</td>
-                                        <td>{{ trash_data.date_created.strftime('%d/%m/%Y')
+                                        <td>{{
+                                            trash_data.date_created.strftime('%d/%m/%Y')
                                             if trash_data.date_created != 'N/A'
                                             else 'N/A' }}</td>
                                         <td>
@@ -202,7 +206,8 @@
                                                 <input type="hidden"
                                                     name="imageToDelete"
                                                     value="{{ trash_data.link }}">
-                                                <button type="submit" id="deleteImage">Delete</button>
+                                                <button type="submit"
+                                                    id="deleteImage">Delete</button>
                                             </form>
                                             <form method="POST"
                                                 action="{{ url_for('documentTrash') }}">
@@ -212,11 +217,17 @@
                                                 <input type="hidden"
                                                     name="imageToRestore"
                                                     value="{{ trash_data.link }}">
-                                                <button type="submit" id="restoreImage">Restore</button>
+                                                <button type="submit"
+                                                    id="restoreImage">Restore</button>
                                             </form>
                                         </td>
                                     </tr>
                                     {% endfor %}
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="4">No trash exist</td>
+                                    </tr>
+                                    {% endif %}
                                 </tbody>
                             </table>
                         </div>

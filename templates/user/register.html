@@ -32,6 +32,13 @@
 
 <body>
 
+  <!-- Display error message as a popup -->
+  {% if error_message %}
+  <script>
+      alert("{{ error_message }}");
+  </script>
+  {% endif %}
+
   <!-- ======= Auth Section ======= -->
   <section id="auth" class="d-flex flex-column justify-content-center align-items-center" style="height: 110vh">
     <div class="container text-center text-md-left" data-aos="fade-up">
